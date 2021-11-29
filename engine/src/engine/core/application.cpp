@@ -45,6 +45,35 @@ void engine::application::run()
 	}
 }
 
+void engine::application::Run_Fixed()
+{
+    const timestep TICK_TIME(1.f / 60.f);
+    m_last_frame_time = static_cast<float>(glfwGetTime());
+    while (s_running)
+    {
+        const auto time = static_cast<float>(glfwGetTime());
+
+        float time_elapsed = time - m_last_frame_time;
+        while (time_elapsed >= TICK_TIME)
+        {
+            time_elapsed -= TICK_TIME;
+            for (auto* layer : m_layers_stack)
+            {
+                layer->on_update(TICK_TIME);
+            }
+            m_last_frame_time = time - time_elapsed;
+        }
+        for (auto* layer : m_layers_stack)
+        {
+            layer->on_render();
+        }
+        const auto end_time = static_cast<float>(glfwGetTime());
+        Sleep((DWORD)(std::max(0.f, TICK_TIME.seconds() - (end_time - time))));
+
+        m_window->on_update();
+    }
+
+}
 void engine::application::on_event(event& event) 
 { 
     event_dispatcher dispatcher(event); 

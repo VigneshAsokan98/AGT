@@ -49,9 +49,8 @@ void menu::on_render()
 	// Set up some of the scene's parameters in the shader
 	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->set_uniform("gEyeWorldPos", m_3d_camera.position());
 
-
-	/*std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->
-		set_uniform("gNumPointLights", (int)num_point_lights);*/
+	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->
+		set_uniform("gNumPointLights", (int)num_point_lights);
 	m_pointLight.submit(mesh_shader, 0);
 	m_lightsource_material->submit(mesh_shader);
 
@@ -62,8 +61,6 @@ void menu::on_render()
 	engine::renderer::end_scene();
 
 	engine::renderer::end_scene();
-
-
 }
 void menu::on_event(engine::event& event)
 {

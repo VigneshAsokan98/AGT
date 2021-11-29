@@ -20,6 +20,9 @@ namespace engine
         /// \brief
         void run();
 
+        //Fixed_Update
+        void Run_Fixed();
+
         /// \brief
         virtual void on_event(event &event);
 
