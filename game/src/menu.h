@@ -19,7 +19,7 @@ public:
 	void on_update(const engine::timestep& time_step) override;
 	void on_render() override;
 	void on_event(engine::event& event) override;
-
+	void on_disable() override;
 private:
 
 	engine::PointLight								m_pointLight;
@@ -31,7 +31,7 @@ private:
 
 	engine::ref<cross_fade>							m_cross_fade{};
 
-	engine::ref<engine::material>						m_lightsource_material{};
+	engine::ref<engine::material>					m_lightsource_material{};
 
 	engine::perspective_camera						m_3d_camera;
 };

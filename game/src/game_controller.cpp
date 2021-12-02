@@ -40,6 +40,7 @@ void game_controller::switch_state(game_fsm::GameState _state)
     m_previous_gamestate_object = m_current_gamestate_object;
     m_current_gamestate_object = m_gamestates[(int)_state];
 
+    m_previous_gamestate_object->on_disable();
     m_current_gamestate_object->init();
 }
 void game_controller::on_render() 

@@ -13,6 +13,7 @@ public :
 	virtual void on_render() {}
 	virtual void on_event(engine::event& event) {}
 	GameState getstate() { return m_state; }
+	virtual void on_disable() {}
 
 protected:
 	GameState				m_state{};

@@ -20,8 +20,8 @@ void player::initialise(engine::ref<engine::game_object> object)
 	m_object->set_forward(glm::vec3(0.f, 0.f, 1.f));
 	m_object->set_right(glm::vec3(1.f, 0.f, 0.f));
 	m_object->set_position(glm::vec3(0.f, .75f, 10.f));
-	m_Headlight_position = glm::vec3(0.f);
 
+	m_health_bar = Billboard::create("assets/textures/healthBar.png", 1, 1, 1);
 	//headLights
 	m_HeadLight.Color = glm::vec3(1.f, 1.f, 1.f);
 	m_HeadLight.AmbientIntensity = 0.2f;
@@ -31,16 +31,15 @@ void player::initialise(engine::ref<engine::game_object> object)
 
 	m_lightsource_material = engine::material::create(1.0f, m_HeadLight.Color,
 		m_HeadLight.Color, m_HeadLight.Color, 1.0f);
-
 }
 
 
-void player::on_render(const engine::ref<engine::shader>& shader)
+void player::on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera)
 {
 	std::dynamic_pointer_cast<engine::gl_shader>(shader)->
 		set_uniform("gNumSpotLights", (int)num_Spot_lights);
 	m_HeadLight.submit(shader, 0);
-
+	m_health_bar->on_render(camera, shader);
 }
 void player::on_update(const engine::timestep& time_step)
 {
@@ -49,8 +48,13 @@ void player::on_update(const engine::timestep& time_step)
 	m_object->set_rotation_amount(atan2(m_object->forward().x, m_object->forward().z));
 	move(time_step);
 
-	m_Headlight_position = m_object->position() - m_object->forward() * 1.5f;
-	m_HeadLight.Position = m_Headlight_position;
+	//update PlayerHealth
+	m_health_bar->activate(m_object->position() + m_object->up() * .75f, 2.f, .2f);
+	m_health_bar->on_update(time_step);
+
+	//update headlight position
+	glm::vec3 Headlight_position = m_object->position() - m_object->forward() * 1.5f;
+	m_HeadLight.Position = Headlight_position;
 	m_HeadLight.Direction = -m_object->forward();
 }
 void player::move(timestep _ts)

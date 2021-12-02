@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Billboard.h" />
     <ClInclude Include="src\cross_fade.h" />
     <ClInclude Include="src\gameover.h" />
     <ClInclude Include="src\gameplay_manager.h" />
@@ -142,6 +143,7 @@
     <ClInclude Include="src\quad.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Billboard.cpp" />
     <ClCompile Include="src\cross_fade.cpp" />
     <ClCompile Include="src\gameover.cpp" />
     <ClCompile Include="src\gameplay_manager.cpp" />

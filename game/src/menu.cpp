@@ -35,6 +35,7 @@ void menu::on_update(const engine::timestep& time_step)
 	m_cross_fade->on_update(time_step);
 	m_cross_fade->activate(true);
 	m_2d_camera.on_update(time_step);
+
 }
 
 void menu::on_render()
@@ -49,8 +50,7 @@ void menu::on_render()
 	// Set up some of the scene's parameters in the shader
 	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->set_uniform("gEyeWorldPos", m_3d_camera.position());
 
-	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->
-		set_uniform("gNumPointLights", (int)num_point_lights);
+	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->set_uniform("gNumPointLights", (int)num_point_lights);
 	m_pointLight.submit(mesh_shader, 0);
 	m_lightsource_material->submit(mesh_shader);
 
@@ -61,6 +61,14 @@ void menu::on_render()
 	engine::renderer::end_scene();
 
 	engine::renderer::end_scene();
+}
+void menu::on_disable()
+{
+	const auto mesh_shader = engine::renderer::shaders_library()->get("mesh");
+	engine::renderer::begin_scene(m_3d_camera, mesh_shader);
+	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->set_uniform("gNumPointLights", 0);
+	engine::renderer::end_scene();
+
 }
 void menu::on_event(engine::event& event)
 {
