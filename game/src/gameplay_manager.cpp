@@ -11,17 +11,18 @@ gameplay_manager::gameplay_manager(GameState state):
 m_3d_camera((float)engine::application::window().width(), (float)engine::application::window().height())
 {
 	m_state = state;
-	// Skybox texture from http://www.vwall.it/wp-content/plugins/canvasio3dpro/inc/resource/cubeMaps/
-	m_skybox = engine::skybox::create(50.f,
-		{ engine::texture_2d::create("assets/textures/sky_box/SkyFront.bmp", true),
-		  engine::texture_2d::create("assets/textures/sky_box/SkyRight.bmp", true),
-		  engine::texture_2d::create("assets/textures/sky_box/SkyBack.bmp", true),
-		  engine::texture_2d::create("assets/textures/sky_box/SkyLeft.bmp", true),
-		  engine::texture_2d::create("assets/textures/sky_box/SkyTop.bmp", true),
-		  engine::texture_2d::create("assets/textures/sky_box/SkyBottom.bmp", true)
-		});
 
+	Create_Effects();
+	Create_Environment_Objects();
+	
+	Create_Player();
+	m_HUD.init();
+	m_physics_manager = engine::bullet_manager::create(m_game_objects);
 
+	m_text_manager = engine::text_manager::create();
+}
+void gameplay_manager::Create_Effects()
+{
 	// Initialise the shaders, materials and lights
 	auto mesh_shader = engine::renderer::shaders_library()->get("mesh");
 	auto text_shader = engine::renderer::shaders_library()->get("text_2D");
@@ -46,6 +47,18 @@ m_3d_camera((float)engine::application::window().width(), (float)engine::applica
 			(float)engine::application::window().height()));
 	m_material = engine::material::create(.0f, glm::vec3(1.0f, 0.1f, 0.07f),
 		glm::vec3(1.0f, 0.1f, 0.07f), glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
+}
+void gameplay_manager::Create_Environment_Objects()
+{
+	// Skybox texture from http://www.vwall.it/wp-content/plugins/canvasio3dpro/inc/resource/cubeMaps/
+	m_skybox = engine::skybox::create(50.f,
+		{ engine::texture_2d::create("assets/textures/sky_box/SkyFront.bmp", true),
+		  engine::texture_2d::create("assets/textures/sky_box/SkyRight.bmp", true),
+		  engine::texture_2d::create("assets/textures/sky_box/SkyBack.bmp", true),
+		  engine::texture_2d::create("assets/textures/sky_box/SkyLeft.bmp", true),
+		  engine::texture_2d::create("assets/textures/sky_box/SkyTop.bmp", true),
+		  engine::texture_2d::create("assets/textures/sky_box/SkyBottom.bmp", true)
+		});
 
 	// Load the terrain texture and create a terrain mesh. Create a terrain object. Set its properties
 	std::vector<engine::ref<engine::texture_2d>> terrain_textures = { engine::texture_2d::create("assets/textures/terrain.bmp", false) };
@@ -58,6 +71,61 @@ m_3d_camera((float)engine::application::window().width(), (float)engine::applica
 	terrain_props.bounding_shape = glm::vec3(100.f, 0.5f, 100.f);
 	terrain_props.restitution = 0.92f;
 	m_terrain = engine::game_object::create(terrain_props);
+
+	//load pinetree
+	engine::ref <engine::model> tree_model = engine::model::create("assets/models/static/pine.obj");
+	engine::game_object_properties tree_props;
+	tree_props.meshes = tree_model->meshes();
+	tree_props.textures = { engine::texture_2d::create("assets/textures/pine.png", false) };
+	float tree_scale = glm::max(tree_model->size().x, glm::max(tree_model->size().y, tree_model->size().z));
+	tree_props.scale = glm::vec3(tree_scale);
+	tree_props.bounding_shape = tree_model->size() / 3.f * tree_scale;
+	for (int x = 0; x < 5; x++)
+	{
+			float PosX = (float)((rand() % (40 + 40)) - 40);
+			float PosZ = (float)((rand() % (40 + 40)) - 40);
+			tree_props.position = { PosX , 1.f, PosZ};
+			m_tree.push_back(engine::game_object::create(tree_props));
+			engine::bounding_box	tree_box;
+			tree_box.set_box(tree_props.bounding_shape.x * tree_props.scale.x, tree_props.bounding_shape.y * tree_props.scale.x, tree_props.bounding_shape.z * tree_props.scale.x, tree_props.position);
+			m_tree_boxes.push_back(tree_box);
+	} 
+
+	//load Hut(Primitive Shape 1)
+	std::vector<glm::vec3> Hut_vertices;
+	Hut_vertices.push_back(glm::vec3(0.f, 6.f, 0.f));	//0
+	Hut_vertices.push_back(glm::vec3(2.f, 4.f, 2.f));	//1
+	Hut_vertices.push_back(glm::vec3(-2.f, 4.f, 2.f));	//2
+	Hut_vertices.push_back(glm::vec3(-2.f, 4.f, -2.f));	//3
+	Hut_vertices.push_back(glm::vec3(2.f, 4.f, -2.f));	//4
+	Hut_vertices.push_back(glm::vec3(-2.f, 0.f, 2.f));	//5
+	Hut_vertices.push_back(glm::vec3(2.f, 0.f, 2.f));	//6
+	Hut_vertices.push_back(glm::vec3(2.f, 0.f, -2.f));	//7
+	Hut_vertices.push_back(glm::vec3(-2.f, 0.f, -2.f));	//8
+
+	engine::ref<engine::hut> hut_shape = engine::hut::create(Hut_vertices);
+	std::vector<engine::ref<engine::texture_2d>> hut_textures =
+	{ engine::texture_2d::create("assets/textures/Wood.bmp", false) };
+	engine::game_object_properties hut_props;
+	hut_props.meshes = { hut_shape->mesh() };
+	hut_props.textures = hut_textures;
+
+	for (int i = 0; i < 4; i++)
+	{
+		float PosX = (float)((rand() % (20 + 20)) - 20);
+		float PosZ = (float)((rand() % (20 + 20)) - 20);
+		hut_props.scale = { 0.5f, .5f, .5f };
+		hut_props.position = { PosX, .5f, PosZ };
+		engine::bounding_box	hut_box;
+		hut_box.set_box(2.f, 3.f, 2.f, hut_props.position);
+		m_hut_boxes.push_back(hut_box);
+		m_huts.push_back(engine::game_object::create(hut_props));
+	}
+
+
+}
+void gameplay_manager::Create_Player()
+{
 
 	m_car_material = engine::material::create(.0f, glm::vec3(1.f, 0.f, 0.f),
 		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
@@ -76,57 +144,9 @@ m_3d_camera((float)engine::application::window().width(), (float)engine::applica
 	m_player.initialise(m_car);
 	m_car_box.set_box(car_props.bounding_shape.x * car_props.scale.x, car_props.bounding_shape.y * car_props.scale.x, car_props.bounding_shape.z * car_props.scale.x, car_props.position);
 
-	//load pinetree
-	engine::ref <engine::model> tree_model = engine::model::create("assets/models/static/pine.obj");
-	engine::game_object_properties tree_props;
-	tree_props.meshes = tree_model->meshes();
-	tree_props.textures = { engine::texture_2d::create("assets/textures/pine.png", false) };
-	float tree_scale = glm::max(tree_model->size().x, glm::max(tree_model->size().y, tree_model->size().z));
-	tree_props.scale = glm::vec3(tree_scale);
-	tree_props.bounding_shape = tree_model->size() / 2.f * tree_scale;
-	for (int x = 10; x < 25; x++)
-	{
-		for (int z = 10; z < 25; z++)
-		{
-			tree_props.position = { -5.f + x * 2.f, 1.f, 0.f + z * 2.f};
-
-			m_tree.push_back(engine::game_object::create(tree_props));
-		}
-	}
-
-	//load spear
-	std::vector<glm::vec3> Hut_vertices;
-	Hut_vertices.push_back(glm::vec3(0.f, 6.f, 0.f));	//0
-	Hut_vertices.push_back(glm::vec3(2.f, 4.f, 2.f));	//1
-	Hut_vertices.push_back(glm::vec3(-2.f, 4.f, 2.f));	//2
-	Hut_vertices.push_back(glm::vec3(-2.f, 4.f, -2.f));	//3
-	Hut_vertices.push_back(glm::vec3(2.f, 4.f, -2.f));	//4
-	Hut_vertices.push_back(glm::vec3(-2.f, 0.f, 2.f));	//5
-	Hut_vertices.push_back(glm::vec3(2.f, 0.f, 2.f));	//6
-	Hut_vertices.push_back(glm::vec3(2.f, 0.f, -2.f));	//7
-	Hut_vertices.push_back(glm::vec3(-2.f, 0.f, -2.f));	//8
-
-	engine::ref<engine::hut> hut_shape = engine::hut::create(Hut_vertices);
-	std::vector<engine::ref<engine::texture_2d>> hut_textures =
-	{ engine::texture_2d::create("assets/textures/wood.jpg", false) };
-	engine::game_object_properties hut_props;
-	hut_props.meshes = { hut_shape->mesh() };
-	hut_props.textures = hut_textures;
-	
-	for (int i = 0; i < 10; i++)
-	{
-		hut_props.scale = { 0.5f, .5f, .5f };
-		hut_props.position = { 10.f, .5f, -20.f + i * 5};
-		engine::bounding_box	hut_box;
-		hut_box.set_box(2.f, 3.f, 2.f, hut_props.position);
-		m_hut_boxes.push_back(hut_box);
-		m_huts.push_back(engine::game_object::create(hut_props));
-	}
-
-	m_physics_manager = engine::bullet_manager::create(m_game_objects);
-
-	m_text_manager = engine::text_manager::create();
 }
+
+
 gameplay_manager::~gameplay_manager()
 {
 
@@ -144,17 +164,29 @@ void gameplay_manager::on_update(const engine::timestep& time_step)
 	glm::vec3 camera_lookat_position = m_player.object()->position() - m_player.object()->forward() * 4.f;
 
 	m_3d_camera.set_view_matrix( camera_position, camera_lookat_position);
-
+	m_HUD.on_update(time_step, m_3d_camera);
 	m_player.on_update(time_step);
 	m_car_box.on_update(m_player.object()->position(), m_player.object()->forward());
+	Check_Player_Collision(pos);
+	m_physics_manager->dynamics_world_update(m_game_objects, double(time_step));
+}
+
+void gameplay_manager::Check_Player_Collision(glm::vec3 player_pos)
+{
 	for each (engine::bounding_box box in m_hut_boxes)
 	{
 		if (box.collision(m_car_box))
 		{
-			m_player.object()->set_position(pos);
+			m_player.object()->set_position(player_pos);
 		}
 	}
-	m_physics_manager->dynamics_world_update(m_game_objects, double(time_step));
+	for each (engine::bounding_box box in m_tree_boxes)
+	{
+		if (box.collision(m_car_box))
+		{
+			m_player.object()->set_position(player_pos);
+		}
+	}
 }
 void gameplay_manager::on_render()
 {
@@ -166,7 +198,6 @@ void gameplay_manager::on_render()
 	engine::renderer::begin_scene(m_3d_camera, mesh_shader);
 
 	m_player.on_render(mesh_shader, m_3d_camera);
-
 	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->set_uniform("has_texture",
 		true);
 	m_terrain->textures().at(0)->bind();
@@ -192,8 +223,11 @@ void gameplay_manager::on_render()
 
 	m_car_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
 
-
 	for each (engine::bounding_box box in m_hut_boxes)
+	{
+		box.on_render(2.5f, 0.f, 0.f, mesh_shader);
+	}
+	for each (engine::bounding_box box in m_tree_boxes)
 	{
 		box.on_render(2.5f, 0.f, 0.f, mesh_shader);
 	}
@@ -211,6 +245,8 @@ void gameplay_manager::on_render()
 		engine::renderer::submit(mesh_shader, m_tree.at(idx));
 	}
 	engine::renderer::end_scene();
+
+	m_HUD.on_render(mesh_shader, m_3d_camera);
 }
 void gameplay_manager::on_event(engine::event& event)
 {

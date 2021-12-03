@@ -8,6 +8,7 @@ using namespace engine;
 player::player()
 {
 	m_speed = 1.0f;
+	m_can_move = true;
 }
 player::~player()
 {
@@ -39,14 +40,16 @@ void player::on_render(const engine::ref<engine::shader>& shader, const engine::
 	std::dynamic_pointer_cast<engine::gl_shader>(shader)->
 		set_uniform("gNumSpotLights", (int)num_Spot_lights);
 	m_HeadLight.submit(shader, 0);
-	m_health_bar->on_render(camera, shader);
+	//m_health_bar->on_render(camera, shader);
 }
 void player::on_update(const engine::timestep& time_step)
 {
 	/*m_object->set_position(m_object->position() += m_object->forward() * m_speed *
 		(float)time_step);*/
 	m_object->set_rotation_amount(atan2(m_object->forward().x, m_object->forward().z));
-	move(time_step);
+
+	if(m_can_move)
+		move(time_step);
 
 	//update PlayerHealth
 	m_health_bar->activate(m_object->position() + m_object->up() * .75f, 2.f, .2f);

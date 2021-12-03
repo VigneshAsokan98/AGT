@@ -3,6 +3,7 @@
 #include "game_fsm.h"
 #include "engine/entities/bounding_box.h"
 #include "player.h"
+#include "hud_manager.h"
 
 
 class gameplay_manager : public game_fsm
@@ -18,9 +19,16 @@ public :
 
 private:
 
+	void Create_Effects();
+	void Create_Environment_Objects();
+	void Create_Player();
+
+	void Check_Player_Collision(glm::vec3 player_pos);
+
 	engine::ref<engine::skybox>										m_skybox{};
 	engine::ref<engine::game_object>								m_terrain{};
 	engine::ref<engine::game_object>								m_car{};
+	hud_manager														m_HUD{};
 	player															m_player{};
 	engine::ref<engine::text_manager>								m_text_manager{};
 	engine::ref<engine::bullet_manager>								m_physics_manager{};
@@ -36,6 +44,7 @@ private:
 
 	engine::bounding_box											m_car_box;
 	std::vector<engine::bounding_box>								m_hut_boxes;
+	std::vector<engine::bounding_box>								m_tree_boxes;
 
 	engine::perspective_camera										m_3d_camera;
 };

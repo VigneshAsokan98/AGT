@@ -30,6 +30,11 @@ game_controller::~game_controller() {}
 void game_controller::on_update(const engine::timestep& time_step) 
 {
 	m_current_gamestate_object->on_update(time_step);
+
+    if (engine::input::key_pressed(engine::key_codes::KEY_SPACE) && m_current_gamestate_object->getstate() == game_fsm::GameState::GameMenu)
+    {
+        switch_state(game_fsm::GameState::GamePlay);
+    }
 } 
 
 void game_controller::switch_state(game_fsm::GameState _state)
@@ -57,10 +62,7 @@ void game_controller::on_event(engine::event& event)
         { 
             engine::render_command::toggle_wireframe();
         }
-        if (e.key_code() == engine::key_codes::KEY_SPACE && m_current_gamestate_object->getstate() == game_fsm::GameState::GameMenu)
-        {
-            switch_state(game_fsm::GameState::GamePlay);
-        }
+        
     } 
 }
 

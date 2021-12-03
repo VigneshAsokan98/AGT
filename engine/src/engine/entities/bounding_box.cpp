@@ -80,8 +80,6 @@ void engine::bounding_box::on_render(float r, float g, float b, const engine::re
 	std::dynamic_pointer_cast<engine::gl_shader>(shader)->set_uniform("colouring_on", false);
 }
 
-
-
 bool engine::bounding_box::collision(bounding_box other_box)
 {
 
