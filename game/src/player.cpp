@@ -20,9 +20,8 @@ void player::initialise(engine::ref<engine::game_object> object)
 	m_object = object;
 	m_object->set_forward(glm::vec3(0.f, 0.f, 1.f));
 	m_object->set_right(glm::vec3(1.f, 0.f, 0.f));
-	m_object->set_position(glm::vec3(0.f, .75f, 10.f));
 
-	m_health_bar = Billboard::create("assets/textures/healthBar.png", 1, 1, 1);
+	
 	//headLights
 	m_HeadLight.Color = glm::vec3(1.f, 1.f, 1.f);
 	m_HeadLight.AmbientIntensity = 0.2f;
@@ -50,10 +49,6 @@ void player::on_update(const engine::timestep& time_step)
 
 	if(m_can_move)
 		move(time_step);
-
-	//update PlayerHealth
-	m_health_bar->activate(m_object->position() + m_object->up() * .75f, 2.f, .2f);
-	m_health_bar->on_update(time_step);
 
 	//update headlight position
 	glm::vec3 Headlight_position = m_object->position() - m_object->forward() * 1.5f;

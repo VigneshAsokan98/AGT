@@ -90,20 +90,20 @@ engine::perspective_camera::perspective_camera(
 
 void engine::perspective_camera::on_update(const timestep& timestep)
 {
-	/*auto [mouse_delta_x, mouse_delta_y] = input::mouse_position();
-	process_mouse(mouse_delta_x, mouse_delta_y);*/
+	auto [mouse_delta_x, mouse_delta_y] = input::mouse_position();
+	process_mouse(mouse_delta_x, mouse_delta_y);
 
 	update_camera_vectors();
 
-    //if(input::key_pressed(engine::key_codes::KEY_A)) // left
-    //    move(e_direction::left, timestep);
-    //else if(input::key_pressed(engine::key_codes::KEY_D)) // right
-    //    move(e_direction::right, timestep);
+    if(input::key_pressed(engine::key_codes::KEY_A)) // left
+        move(e_direction::left, timestep);
+    else if(input::key_pressed(engine::key_codes::KEY_D)) // right
+        move(e_direction::right, timestep);
 
-    //if(input::key_pressed(engine::key_codes::KEY_S)) // down
-    //    move(e_direction::backward, timestep);
-    //else if(engine::input::key_pressed(engine::key_codes::KEY_W)) // up
-    //    move(e_direction::forward, timestep);
+    if(input::key_pressed(engine::key_codes::KEY_S)) // down
+        move(e_direction::backward, timestep);
+    else if(engine::input::key_pressed(engine::key_codes::KEY_W)) // up
+        move(e_direction::forward, timestep);
 
     /*float delta = input::mouse_scroll();
     process_mouse_scroll(delta);*/

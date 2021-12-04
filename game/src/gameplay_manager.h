@@ -3,6 +3,8 @@
 #include "game_fsm.h"
 #include "engine/entities/bounding_box.h"
 #include "player.h"
+#include "enemy.h"
+#include "turret_enemy.h"
 #include "hud_manager.h"
 
 
@@ -22,14 +24,17 @@ private:
 	void Create_Effects();
 	void Create_Environment_Objects();
 	void Create_Player();
-
+	void Create_Enemies();
 	void Check_Player_Collision(glm::vec3 player_pos);
 
 	engine::ref<engine::skybox>										m_skybox{};
 	engine::ref<engine::game_object>								m_terrain{};
 	engine::ref<engine::game_object>								m_car{};
+	std::vector<engine::ref<engine::game_object>>					m_enemy_objects{};
 	hud_manager														m_HUD{};
 	player															m_player{};
+	turret_enemy													m_enemy_player{};
+	std::vector <enemy>												m_enemies{};
 	engine::ref<engine::text_manager>								m_text_manager{};
 	engine::ref<engine::bullet_manager>								m_physics_manager{};
 	std::vector<engine::ref<engine::game_object>>					m_game_objects{};
@@ -40,6 +45,7 @@ private:
 
 
 	std::vector<engine::ref<engine::game_object>>					m_huts{};
+	engine::ref<engine::game_object>								m_bullet{};
 	std::vector<engine::ref<engine::game_object>>					m_tree{};
 
 	engine::bounding_box											m_car_box;

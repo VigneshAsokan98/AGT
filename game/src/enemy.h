@@ -8,9 +8,9 @@ public:
 	~enemy();
 
 	virtual void on_update(const engine::timestep& time_step) {}
-	virtual void on_render() {}
+	virtual void init(engine::ref<engine::game_object> object) {} 
+	virtual void on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera) {}
 	virtual void on_event(engine::event& event) {}
-
 
 protected:
 	int			m_health;

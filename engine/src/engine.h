@@ -33,6 +33,7 @@
 #include "engine/entities/terrain.h"
 #include "engine/entities/skybox.h"
 #include "engine/entities/shapes/hut.h"
+#include "engine/entities/shapes/Pentagon_prism.h"
 
 // ---utils---------------------------
 #include "engine/utils/bullet_manager.h"

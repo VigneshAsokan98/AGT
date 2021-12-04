@@ -20,6 +20,9 @@ m_3d_camera((float)engine::application::window().width(), (float)engine::applica
 	m_physics_manager = engine::bullet_manager::create(m_game_objects);
 
 	m_text_manager = engine::text_manager::create();
+
+	m_3d_camera.set_view_matrix(glm::vec3(0.f,15.f,0.f), glm::vec3(0.f));
+
 }
 void gameplay_manager::Create_Effects()
 {
@@ -90,6 +93,41 @@ void gameplay_manager::Create_Environment_Objects()
 			tree_box.set_box(tree_props.bounding_shape.x * tree_props.scale.x, tree_props.bounding_shape.y * tree_props.scale.x, tree_props.bounding_shape.z * tree_props.scale.x, tree_props.position);
 			m_tree_boxes.push_back(tree_box);
 	} 
+	//Load bullet
+	std::vector<glm::vec3> Bullet_vertices;
+	Bullet_vertices.push_back(glm::vec3(0.f, 6.f, 0.f));	//0
+	Bullet_vertices.push_back(glm::vec3(2.f, 6.f, 0.f));	//1
+	Bullet_vertices.push_back(glm::vec3(2.f, 6.f, 2.f));	//2
+	Bullet_vertices.push_back(glm::vec3(0.f, 6.f, 2.f));	//3
+	Bullet_vertices.push_back(glm::vec3(0.f, 4.f, 2.f));	//4
+	Bullet_vertices.push_back(glm::vec3(0.f, 4.f, 0.f));	//5
+	Bullet_vertices.push_back(glm::vec3(-2.f, 4.f, 0.f));	//6
+	Bullet_vertices.push_back(glm::vec3(-2.f, 2.f, 0.f));	//7
+	Bullet_vertices.push_back(glm::vec3(0.f, 2.f, 0.f));	//8
+	Bullet_vertices.push_back(glm::vec3(0.f, 1.f, 0.f));	//9
+	Bullet_vertices.push_back(glm::vec3(2.f, 1.f, 0.f));	//10
+	Bullet_vertices.push_back(glm::vec3(2.f, 2.f, 0.f));	//11
+	Bullet_vertices.push_back(glm::vec3(4.f, 2.f, 0.f));	//12
+	Bullet_vertices.push_back(glm::vec3(4.f, 4.f, 0.f));	//13
+	Bullet_vertices.push_back(glm::vec3(2.f, 4.f, 0.f));	//14
+	Bullet_vertices.push_back(glm::vec3(2.f, 4.f, 2.f));	//15
+	Bullet_vertices.push_back(glm::vec3(4.f, 4.f, 2.f));	//16
+	Bullet_vertices.push_back(glm::vec3(4.f, 2.f, 2.f));	//17
+	Bullet_vertices.push_back(glm::vec3(2.f, 2.f, 2.f));	//18
+	Bullet_vertices.push_back(glm::vec3(2.f, 1.f, 2.f));	//19
+	Bullet_vertices.push_back(glm::vec3(0.f, 1.f, 2.f));	//20
+	Bullet_vertices.push_back(glm::vec3(0.f, 2.f, 2.f));	//22
+	Bullet_vertices.push_back(glm::vec3(-2.f, 2.f, 2.f));	//23
+	Bullet_vertices.push_back(glm::vec3(-2.f, 4.f, 2.f));	//24
+
+	engine::ref<engine::Pentagon_prism> bullet_shape = engine::Pentagon_prism::create(Bullet_vertices);
+	std::vector<engine::ref<engine::texture_2d>> bullet_textures =
+	{ engine::texture_2d::create("assets/textures/Green.bmp", false) };
+	engine::game_object_properties bullet_props;
+	bullet_props.meshes = { bullet_shape->mesh() };
+	bullet_props.textures = bullet_textures;
+	bullet_props.position = { 2, .5f, -5 };
+	m_bullet = engine::game_object::create(bullet_props);
 
 	//load Hut(Primitive Shape 1)
 	std::vector<glm::vec3> Hut_vertices;
@@ -126,7 +164,6 @@ void gameplay_manager::Create_Environment_Objects()
 }
 void gameplay_manager::Create_Player()
 {
-
 	m_car_material = engine::material::create(.0f, glm::vec3(1.f, 0.f, 0.f),
 		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
 
@@ -136,7 +173,7 @@ void gameplay_manager::Create_Player()
 	car_props.meshes = car_model->meshes();
 	car_props.textures = car_model->textures();
 	float car_scale = glm::max(car_model->size().x, glm::max(car_model->size().y, car_model->size().z));
-	car_props.position = { -5.f, 0.f, 0.f };
+	car_props.position = { 0.f, .75f, 10.f };
 	car_props.scale = glm::vec3(car_scale);
 	car_props.bounding_shape = car_model->size();
 	m_car = engine::game_object::create(car_props);
@@ -145,7 +182,21 @@ void gameplay_manager::Create_Player()
 	m_car_box.set_box(car_props.bounding_shape.x * car_props.scale.x, car_props.bounding_shape.y * car_props.scale.x, car_props.bounding_shape.z * car_props.scale.x, car_props.position);
 
 }
+void gameplay_manager::Create_Enemies()
+{
+	engine::ref <engine::model> turret_model = engine::model::create("assets/models/static/redcar1.obj");
+	engine::game_object_properties turret_props;
+	turret_props.meshes = turret_model->meshes();
+	turret_props.textures = turret_model->textures();
+	float turret_scale = glm::max(turret_model->size().x, glm::max(turret_model->size().y, turret_model->size().z));
+	turret_props.position = { -5.f, 0.f, 0.f };
+	turret_props.scale = glm::vec3(turret_scale);
+	turret_props.bounding_shape = turret_model->size();
+	engine::ref<engine::game_object> enemy_object = engine::game_object::create(turret_props);
 
+	m_enemy_player.init(enemy_object);
+	m_enemies.push_back(m_enemy_player);
+}
 
 gameplay_manager::~gameplay_manager()
 {
@@ -163,7 +214,7 @@ void gameplay_manager::on_update(const engine::timestep& time_step)
 	glm::vec3 camera_position = m_player.object()->position() + (glm::vec3(0.f, 3.f, 0.f) + m_player.object()->forward() * 10.f);
 	glm::vec3 camera_lookat_position = m_player.object()->position() - m_player.object()->forward() * 4.f;
 
-	m_3d_camera.set_view_matrix( camera_position, camera_lookat_position);
+	//m_3d_camera.set_view_matrix( camera_position, camera_lookat_position);
 	m_HUD.on_update(time_step, m_3d_camera);
 	m_player.on_update(time_step);
 	m_car_box.on_update(m_player.object()->position(), m_player.object()->forward());
@@ -220,6 +271,7 @@ void gameplay_manager::on_render()
 	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->set_uniform("lighting_on", true);
 
 	engine::renderer::submit(mesh_shader, m_terrain);
+	engine::renderer::submit(mesh_shader, m_bullet);
 
 	m_car_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
 

@@ -1,6 +1,6 @@
 #include "enemy.h"
 
-enemy::enemy()
+enemy::enemy() 
 {
 	m_health = 100;
 	m_speed = 10;

@@ -134,6 +134,7 @@
   <ItemGroup>
     <ClInclude Include="src\Billboard.h" />
     <ClInclude Include="src\cross_fade.h" />
+    <ClInclude Include="src\enemy.h" />
     <ClInclude Include="src\gameover.h" />
     <ClInclude Include="src\gameplay_manager.h" />
     <ClInclude Include="src\game_controller.h" />
@@ -142,10 +143,12 @@
     <ClInclude Include="src\menu.h" />
     <ClInclude Include="src\player.h" />
     <ClInclude Include="src\quad.h" />
+    <ClInclude Include="src\turret_enemy.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Billboard.cpp" />
     <ClCompile Include="src\cross_fade.cpp" />
+    <ClCompile Include="src\enemy.cpp" />
     <ClCompile Include="src\gameover.cpp" />
     <ClCompile Include="src\gameplay_manager.cpp" />
     <ClCompile Include="src\game_controller.cpp" />
@@ -155,6 +158,7 @@
     <ClCompile Include="src\menu.cpp" />
     <ClCompile Include="src\player.cpp" />
     <ClCompile Include="src\quad.cpp" />
+    <ClCompile Include="src\turrent_enemy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\engine\engine.vcxproj">
