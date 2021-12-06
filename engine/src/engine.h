@@ -33,6 +33,7 @@
 #include "engine/entities/terrain.h"
 #include "engine/entities/skybox.h"
 #include "engine/entities/shapes/hut.h"
+#include "engine/entities/shapes/Plus_shape.h"
 #include "engine/entities/shapes/Pentagon_prism.h"
 
 // ---utils---------------------------

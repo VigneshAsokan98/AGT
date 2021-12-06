@@ -25,17 +25,6 @@ void cross_fade::on_update(const engine::timestep& time_step)
 
 	m_transparency = 0.8f - 0.8f * m_timer / m_max_time;
 
-	if (m_timer > m_max_time)
-	{
-		s_active = false;
-		if (s_loop)
-		{
-			s_active = true;
-			m_transparency = 1.0f;
-			m_timer = 0.0f;
-
-		}
-	}
 }
 
 void cross_fade::on_render(engine::ref<engine::shader> shader)
@@ -54,9 +43,8 @@ void cross_fade::on_render(engine::ref<engine::shader> shader)
 	std::dynamic_pointer_cast<engine::gl_shader>(shader)->set_uniform("transparency", 1.0f);
 }
 
-void cross_fade::activate(bool _loop)
+void cross_fade::activate()
 {
-	s_loop = _loop;
 	s_active = true;
 	m_transparency = 1.0f;
 	m_timer = 0.0f;

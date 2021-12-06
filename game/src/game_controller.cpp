@@ -54,9 +54,11 @@ void game_controller::on_render()
 } 
 
 void game_controller::on_event(engine::event& event) 
-{ 
+{
+    m_current_gamestate_object->on_event(event);
+
     if(event.event_type() == engine::event_type_e::key_pressed) 
-    { 
+    {        
         auto& e = dynamic_cast<engine::key_pressed_event&>(event); 
         if(e.key_code() == engine::key_codes::KEY_TAB) 
         { 

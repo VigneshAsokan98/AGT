@@ -1,6 +1,6 @@
 #pragma once
 #include <engine.h>
-#include "Billboard.h"
+#include "cross_fade.h"
 
 class hud_manager
 {
@@ -15,7 +15,7 @@ public:
 	void SetAmmo(int ammo) { m_ammoLeft = ammo; }
 private:
 
-	engine::ref<Billboard>								m_HealthBar;
+	engine::ref<cross_fade>								m_HealthBar;
 
 	engine::ref<engine::text_manager>					m_text_manager{};
 

@@ -40,15 +40,15 @@ menu::~menu()
 
 void menu::init()
 {
-	m_menuBG->activate(true);
-	m_Title->activate(true);
+	m_menuBG->activate();
+	m_Title->activate();
 }
 void menu::on_update(const engine::timestep& time_step)
 {
 	m_menuBG->on_update(time_step);
-	m_menuBG->activate(true);
+	m_menuBG->activate();
 	m_Title->on_update(time_step);
-	m_Title->activate(true);
+	m_Title->activate();
 	m_2d_camera.on_update(time_step);
 
 	if (engine::input::key_pressed(engine::key_codes::KEY_SPACE) && m_currentSelection == Menu_selection::exit)

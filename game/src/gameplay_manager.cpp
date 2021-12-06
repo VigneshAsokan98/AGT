@@ -12,17 +12,35 @@ m_3d_camera((float)engine::application::window().width(), (float)engine::applica
 {
 	m_state = state;
 
+	//init Spawnpoints
+	Init_Spawnpoints();
+
 	Create_Effects();
 	Create_Environment_Objects();
-	
 	Create_Player();
-	m_HUD.init();
-	m_physics_manager = engine::bullet_manager::create(m_game_objects);
 
+	m_HUD.init();
+
+	m_physics_manager = engine::bullet_manager::create(m_game_objects);
 	m_text_manager = engine::text_manager::create();
 
-	m_3d_camera.set_view_matrix(glm::vec3(0.f,15.f,0.f), glm::vec3(0.f));
+}
+void gameplay_manager::Init_Spawnpoints()
+{
+	//spawn points of Pickups
+	m_pickups_Spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
+	m_pickups_Spawnpoints.push_back(glm::vec3(9.f, 0.f, -5.f));
+	m_pickups_Spawnpoints.push_back(glm::vec3(-12.f, 0.f, 16.f));
+	m_pickups_Spawnpoints.push_back(glm::vec3(-9.f, 0.f, -14.f));
+	m_pickups_Spawnpoints.push_back(glm::vec3(15.f, 0.f, 7.f));
 
+	//Spawn points for Enemies
+	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
 }
 void gameplay_manager::Create_Effects()
 {
@@ -85,51 +103,76 @@ void gameplay_manager::Create_Environment_Objects()
 	tree_props.bounding_shape = tree_model->size() / 3.f * tree_scale;
 	for (int x = 0; x < 5; x++)
 	{
-			float PosX = (float)((rand() % (40 + 40)) - 40);
-			float PosZ = (float)((rand() % (40 + 40)) - 40);
+			float PosX = (float)((std::rand() % (40 + 40)) - 40);
+			float PosZ = (float)((std::rand()  % (40 + 40)) - 40);
 			tree_props.position = { PosX , 1.f, PosZ};
 			m_tree.push_back(engine::game_object::create(tree_props));
 			engine::bounding_box	tree_box;
 			tree_box.set_box(tree_props.bounding_shape.x * tree_props.scale.x, tree_props.bounding_shape.y * tree_props.scale.x, tree_props.bounding_shape.z * tree_props.scale.x, tree_props.position);
 			m_tree_boxes.push_back(tree_box);
 	} 
-	//Load bullet
-	std::vector<glm::vec3> Bullet_vertices;
-	Bullet_vertices.push_back(glm::vec3(0.f, 6.f, 0.f));	//0
-	Bullet_vertices.push_back(glm::vec3(2.f, 6.f, 0.f));	//1
-	Bullet_vertices.push_back(glm::vec3(2.f, 6.f, 2.f));	//2
-	Bullet_vertices.push_back(glm::vec3(0.f, 6.f, 2.f));	//3
-	Bullet_vertices.push_back(glm::vec3(0.f, 4.f, 2.f));	//4
-	Bullet_vertices.push_back(glm::vec3(0.f, 4.f, 0.f));	//5
-	Bullet_vertices.push_back(glm::vec3(-2.f, 4.f, 0.f));	//6
-	Bullet_vertices.push_back(glm::vec3(-2.f, 2.f, 0.f));	//7
-	Bullet_vertices.push_back(glm::vec3(0.f, 2.f, 0.f));	//8
-	Bullet_vertices.push_back(glm::vec3(0.f, 1.f, 0.f));	//9
-	Bullet_vertices.push_back(glm::vec3(2.f, 1.f, 0.f));	//10
-	Bullet_vertices.push_back(glm::vec3(2.f, 2.f, 0.f));	//11
-	Bullet_vertices.push_back(glm::vec3(4.f, 2.f, 0.f));	//12
-	Bullet_vertices.push_back(glm::vec3(4.f, 4.f, 0.f));	//13
-	Bullet_vertices.push_back(glm::vec3(2.f, 4.f, 0.f));	//14
-	Bullet_vertices.push_back(glm::vec3(2.f, 4.f, 2.f));	//15
-	Bullet_vertices.push_back(glm::vec3(4.f, 4.f, 2.f));	//16
-	Bullet_vertices.push_back(glm::vec3(4.f, 2.f, 2.f));	//17
-	Bullet_vertices.push_back(glm::vec3(2.f, 2.f, 2.f));	//18
-	Bullet_vertices.push_back(glm::vec3(2.f, 1.f, 2.f));	//19
-	Bullet_vertices.push_back(glm::vec3(0.f, 1.f, 2.f));	//20
-	Bullet_vertices.push_back(glm::vec3(0.f, 2.f, 2.f));	//22
-	Bullet_vertices.push_back(glm::vec3(-2.f, 2.f, 2.f));	//23
-	Bullet_vertices.push_back(glm::vec3(-2.f, 4.f, 2.f));	//24
+	//Load Health_Pickup (Primitive Shape 1)
+	std::vector<glm::vec3> Health_Pickup_vertices;
+	Health_Pickup_vertices.push_back(glm::vec3(0.f, 3.f, 0.f));		//0
+	Health_Pickup_vertices.push_back(glm::vec3(1.f, 3.f, 0.f));		//1
+	Health_Pickup_vertices.push_back(glm::vec3(1.f, 3.f, 1.f));		//2
+	Health_Pickup_vertices.push_back(glm::vec3(0.f, 3.f, 1.f));		//3
+	Health_Pickup_vertices.push_back(glm::vec3(0.f, 2.f, 1.f));		//4
+	Health_Pickup_vertices.push_back(glm::vec3(0.f, 2.f, 0.f));		//5
+	Health_Pickup_vertices.push_back(glm::vec3(-1.f, 2.f, 0.f));	//6
+	Health_Pickup_vertices.push_back(glm::vec3(-1.f, 1.f, 0.f));	//7
+	Health_Pickup_vertices.push_back(glm::vec3(0.f, 1.f, 0.f));		//8
+	Health_Pickup_vertices.push_back(glm::vec3(0.f, .5f, 0.f));		//9
+	Health_Pickup_vertices.push_back(glm::vec3(1.f, .5f, 0.f));		//10
+	Health_Pickup_vertices.push_back(glm::vec3(1.f, 1.f, 0.f));		//11
+	Health_Pickup_vertices.push_back(glm::vec3(2.f, 1.f, 0.f));		//12
+	Health_Pickup_vertices.push_back(glm::vec3(2.f, 2.f, 0.f));		//13
+	Health_Pickup_vertices.push_back(glm::vec3(1.f, 2.f, 0.f));		//14
+	Health_Pickup_vertices.push_back(glm::vec3(1.f, 2.f, 1.f));		//15
+	Health_Pickup_vertices.push_back(glm::vec3(2.f, 2.f, 1.f));		//16
+	Health_Pickup_vertices.push_back(glm::vec3(2.f, 1.f, 1.f));		//17
+	Health_Pickup_vertices.push_back(glm::vec3(1.f, 1.f, 1.f));		//18
+	Health_Pickup_vertices.push_back(glm::vec3(1.f, .5f, 1.f));		//19
+	Health_Pickup_vertices.push_back(glm::vec3(0.f, .5f, 1.f));		//20
+	Health_Pickup_vertices.push_back(glm::vec3(0.f, 1.f, 1.f));		//22
+	Health_Pickup_vertices.push_back(glm::vec3(-1.f, 1.f, 1.f));	//23
+	Health_Pickup_vertices.push_back(glm::vec3(-1.f, 2.f, 1.f));	//24
 
-	engine::ref<engine::Pentagon_prism> bullet_shape = engine::Pentagon_prism::create(Bullet_vertices);
-	std::vector<engine::ref<engine::texture_2d>> bullet_textures =
+	engine::ref<engine::Plus_shape> Health_Pickup_shape = engine::Plus_shape::create(Health_Pickup_vertices);
+	std::vector<engine::ref<engine::texture_2d>> Health_Pickup_textures =
 	{ engine::texture_2d::create("assets/textures/Green.bmp", false) };
-	engine::game_object_properties bullet_props;
-	bullet_props.meshes = { bullet_shape->mesh() };
-	bullet_props.textures = bullet_textures;
-	bullet_props.position = { 2, .5f, -5 };
-	m_bullet = engine::game_object::create(bullet_props);
+	engine::game_object_properties Health_Pickup_props;
+	Health_Pickup_props.meshes = { Health_Pickup_shape->mesh() };
+	Health_Pickup_props.textures = Health_Pickup_textures;
+	Health_Pickup_props.position = { 2, .5f, -5 };
+	m_Health_Pickup = engine::game_object::create(Health_Pickup_props);
 
-	//load Hut(Primitive Shape 1)
+
+	//Load Bullets(Primitive Shape 2)
+	std::vector<glm::vec3> Bullet_vertices;
+	Bullet_vertices.push_back(glm::vec3(.5f, .5f, 1.f));	//0
+	Bullet_vertices.push_back(glm::vec3(.75f, 0.f, 1.f));	//1
+	Bullet_vertices.push_back(glm::vec3(.25f, 0.f, 1.f));	//2
+	Bullet_vertices.push_back(glm::vec3(0.f, .5f, 1.f));	//3
+	Bullet_vertices.push_back(glm::vec3(.5f, 1.f, 1.f));	//4
+	Bullet_vertices.push_back(glm::vec3(1.f, .5f, 1.f));	//5
+	Bullet_vertices.push_back(glm::vec3(1.f, .5f, -1.f));	//6
+	Bullet_vertices.push_back(glm::vec3(.75f, 0.f, -1.f));	//7
+	Bullet_vertices.push_back(glm::vec3(.25f, 0.f, -1.f));	//8
+	Bullet_vertices.push_back(glm::vec3(0.f, .5f, -1.f));	//9
+	Bullet_vertices.push_back(glm::vec3(.5f, 1.f, -1.f));	//10
+	Bullet_vertices.push_back(glm::vec3(.5f, .5f, -1.f));	//11
+
+	engine::ref<engine::Pentagon_prism> Bullet_shape = engine::Pentagon_prism::create(Bullet_vertices);
+	std::vector<engine::ref<engine::texture_2d>> Bullet_textures =
+	{ engine::texture_2d::create("assets/textures/Green.bmp", false) };
+	engine::game_object_properties Bullet_props;
+	Bullet_props.meshes = { Bullet_shape->mesh() };
+	Bullet_props.textures = Bullet_textures;
+	Bullet_props.position = { 5.f, 6.f, 6.f };
+	m_bullets = engine::game_object::create(Bullet_props);
+
+	//load Hut(Primitive Shape 3)
 	std::vector<glm::vec3> Hut_vertices;
 	Hut_vertices.push_back(glm::vec3(0.f, 6.f, 0.f));	//0
 	Hut_vertices.push_back(glm::vec3(2.f, 4.f, 2.f));	//1
@@ -148,18 +191,35 @@ void gameplay_manager::Create_Environment_Objects()
 	hut_props.meshes = { hut_shape->mesh() };
 	hut_props.textures = hut_textures;
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 6; i++)
 	{
-		float PosX = (float)((rand() % (20 + 20)) - 20);
-		float PosZ = (float)((rand() % (20 + 20)) - 20);
+		float PosX = (float)((rand() % (30 + 30)) - 30);
+		float PosZ = (float)((rand() % (30 + 30)) - 30);
 		hut_props.scale = { 0.5f, .5f, .5f };
-		hut_props.position = { PosX, .5f, PosZ };
+		hut_props.position = { PosX , 1.f, PosZ };
 		engine::bounding_box	hut_box;
 		hut_box.set_box(2.f, 3.f, 2.f, hut_props.position);
 		m_hut_boxes.push_back(hut_box);
 		m_huts.push_back(engine::game_object::create(hut_props));
 	}
 
+	engine::ref <engine::sphere> sphere_shape = engine::sphere::create(25, 25, .25f);
+	std::vector<engine::ref<engine::texture_2d>> ball_textures =
+	{ engine::texture_2d::create("assets/textures/Wood.bmp", false) };
+	engine::game_object_properties sphere_props;
+	sphere_props.position = { 0.f, 5.f, -5.f };
+	sphere_props.meshes = {sphere_shape->mesh()};
+	sphere_props.textures = ball_textures;
+	sphere_props.bounding_shape = glm::vec3(.25f);
+	sphere_props.type = 1;
+	sphere_props.restitution = 0.92f;
+	sphere_props.mass = 0.6f;
+	engine::ref<engine::game_object> _ball = engine::game_object::create(sphere_props);
+
+	m_game_objects.push_back(m_terrain);
+	m_game_objects.push_back(_ball);
+
+	m_cannonball.initialise(_ball);
 
 }
 void gameplay_manager::Create_Player()
@@ -180,7 +240,6 @@ void gameplay_manager::Create_Player()
 
 	m_player.initialise(m_car);
 	m_car_box.set_box(car_props.bounding_shape.x * car_props.scale.x, car_props.bounding_shape.y * car_props.scale.x, car_props.bounding_shape.z * car_props.scale.x, car_props.position);
-
 }
 void gameplay_manager::Create_Enemies()
 {
@@ -214,10 +273,12 @@ void gameplay_manager::on_update(const engine::timestep& time_step)
 	glm::vec3 camera_position = m_player.object()->position() + (glm::vec3(0.f, 3.f, 0.f) + m_player.object()->forward() * 10.f);
 	glm::vec3 camera_lookat_position = m_player.object()->position() - m_player.object()->forward() * 4.f;
 
-	//m_3d_camera.set_view_matrix( camera_position, camera_lookat_position);
+	m_3d_camera.set_view_matrix( camera_position, camera_lookat_position);
 	m_HUD.on_update(time_step, m_3d_camera);
 	m_player.on_update(time_step);
 	m_car_box.on_update(m_player.object()->position(), m_player.object()->forward());
+	m_cannonball.on_update(time_step);
+
 	Check_Player_Collision(pos);
 	m_physics_manager->dynamics_world_update(m_game_objects, double(time_step));
 }
@@ -271,8 +332,7 @@ void gameplay_manager::on_render()
 	std::dynamic_pointer_cast<engine::gl_shader>(mesh_shader)->set_uniform("lighting_on", true);
 
 	engine::renderer::submit(mesh_shader, m_terrain);
-	engine::renderer::submit(mesh_shader, m_bullet);
-
+	m_cannonball.on_render(mesh_shader);
 	m_car_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
 
 	for each (engine::bounding_box box in m_hut_boxes)
@@ -286,10 +346,14 @@ void gameplay_manager::on_render()
 	m_car_material->submit(mesh_shader);
 	engine::renderer::submit(mesh_shader, m_player.object());
 
+	//Rendering Primitives 
 	for (int idx = 0; idx < m_huts.size(); idx++)
 	{
 		engine::renderer::submit(mesh_shader, m_huts.at(idx));
 	}
+
+	engine::renderer::submit(mesh_shader, m_bullets);
+	engine::renderer::submit(mesh_shader, m_Health_Pickup);
 
 	m_material->submit(mesh_shader);
 	for (int idx = 0; idx < m_tree.size(); idx++)
@@ -302,5 +366,12 @@ void gameplay_manager::on_render()
 }
 void gameplay_manager::on_event(engine::event& event)
 {
-
+	if (event.event_type() == engine::event_type_e::key_pressed)
+	{
+		auto& e = dynamic_cast<engine::key_pressed_event&>(event);
+		if (e.key_code() == engine::key_codes::KEY_Q)
+		{
+			m_cannonball.shoot(m_player, 100.f);
+		}
+	}
 }

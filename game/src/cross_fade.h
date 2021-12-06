@@ -12,13 +12,12 @@ public:
 
 	void on_update(const engine::timestep& time_step);
 	void on_render(engine::ref<engine::shader> shader);
-	void activate(bool _loop);
+	void activate();
 
 	static engine::ref<cross_fade> create(const std::string& path, float max_time, float width, float height);
 
 private:
 	bool s_active;
-	bool s_loop;
 
 	float m_timer;
 	float m_max_time;
