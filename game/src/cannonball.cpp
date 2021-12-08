@@ -12,10 +12,12 @@ void cannonball::initialise(engine::ref<engine::game_object> object)
 	m_object = object;
 	m_rotational_inertia = (2.f / 3.f) * object->mass() * (m_object->bounding_shape().y / 2.f) * (m_object->bounding_shape().y / 2.f);
 	m_contact_time = 0.05f;
+	m_explosionFX = Billboard::create("assets/textures/Explosion.png", 8, 6, 48);
 }
 
 void cannonball::shoot(const player& _player, float kick)
 {
+	_renderON = true;
 	m_object->set_velocity(glm::vec3(0.f));
 	m_object->set_acceleration(glm::vec3(0.f, -9.8f, 0.f));
 	m_object->set_torque(glm::vec3(0.f));
@@ -45,9 +47,22 @@ void cannonball::shoot(const player& _player, float kick)
 void cannonball::on_update(const engine::timestep& time_step)
 {
 	// Update physical quanitities
+	UpdatePhysics(time_step);
+
+	m_explosionFX->on_update(time_step);
+	// Check for collision detection
+	float y_plane = 0.5f;
+	if (collision_detection(y_plane)) {
+		collision_response(y_plane);
+	}
+}
+
+void cannonball::UpdatePhysics(const engine::timestep& time_step)
+{
 	m_last_position = m_object->position();
 
-	m_object->set_velocity(m_object->velocity() + (m_object->acceleration() + m_instantaneous_acceleration) * (float)time_step);
+	glm::vec3 velocity = (m_object->velocity() + (m_object->acceleration() + m_instantaneous_acceleration) * (float)time_step);
+	m_object->set_velocity(velocity);
 	m_object->set_position(m_object->position() + m_object->velocity() * (float)time_step);
 
 	glm::vec3 angle = m_object->rotation_axis() * m_object->rotation_amount();
@@ -67,22 +82,21 @@ void cannonball::on_update(const engine::timestep& time_step)
 		m_contact_time = 0.f;
 	}
 	m_contact_time += time_step;
-
-	// Check for collision detection
-	float y_plane = 0.5f;
-	if (collision_detection(y_plane)) {
-		collision_response(y_plane);
-	}
 }
-
-void cannonball::on_render(const engine::ref<engine::shader>& shader)
+void cannonball::on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera)
 {
+	m_explosionFX->on_render(camera, shader);
+
+	if (!_renderON)
+		return;
+
 	glm::mat4 transform(1.0f);
 	transform = glm::translate(transform, m_object->position());
 	transform = glm::rotate(transform, -m_theta, glm::vec3(1.f, 0.f, 0.f));
 	transform = glm::rotate(transform, m_phi, glm::vec3(0.f, 1.f, 0.f));
 	transform = glm::rotate(transform, m_object->rotation_amount(), m_object->rotation_axis());
 	engine::renderer::submit(shader, transform, m_object);
+
 }
 
 bool cannonball::collision_detection(float y_plane)
@@ -93,7 +107,11 @@ bool cannonball::collision_detection(float y_plane)
 	}
 	return false;
 }
-
+void cannonball::Explode()
+{
+	_renderON = false;
+	m_explosionFX->activate(m_object->position(), 2.f, 2.f);
+}
 void cannonball::collision_response(float y_plane)
 {
 	float convergenceThreshold = 0.5f;
@@ -110,5 +128,6 @@ void cannonball::collision_response(float y_plane)
 		m_object->set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_object->set_position(glm::vec3(m_object->position().x, m_object->bounding_shape().y + y_plane, m_object->position().z));
 		m_object->set_angular_velocity(glm::vec3(0.0f, 0.0f, 0.0f));
+		Explode();
 	}
 }

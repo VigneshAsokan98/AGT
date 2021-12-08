@@ -142,8 +142,10 @@
     <ClInclude Include="src\game_fsm.h" />
     <ClInclude Include="src\hud_manager.h" />
     <ClInclude Include="src\menu.h" />
+    <ClInclude Include="src\pickup_manager.h" />
     <ClInclude Include="src\player.h" />
     <ClInclude Include="src\quad.h" />
+    <ClInclude Include="src\Shield.h" />
     <ClInclude Include="src\turret_enemy.h" />
   </ItemGroup>
   <ItemGroup>
@@ -158,8 +160,10 @@
     <ClCompile Include="src\game_fsm.cpp" />
     <ClCompile Include="src\hud_manager.cpp" />
     <ClCompile Include="src\menu.cpp" />
+    <ClCompile Include="src\pickup_manager.cpp" />
     <ClCompile Include="src\player.cpp" />
     <ClCompile Include="src\quad.cpp" />
+    <ClCompile Include="src\Shield.cpp" />
     <ClCompile Include="src\turrent_enemy.cpp" />
   </ItemGroup>
   <ItemGroup>

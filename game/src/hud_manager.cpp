@@ -30,9 +30,9 @@ void hud_manager::on_update(const engine::timestep& time_step, const engine::per
 	m_HealthBar->activate();
 	m_HealthBar->on_update(time_step);
 }
-void hud_manager::on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera)
+void hud_manager::on_render(const engine::ref<engine::shader>& shader)
 {
-	m_HealthBar->on_render(shader);
+	//m_HealthBar->on_render(shader);
 	const auto text_shader = engine::renderer::shaders_library()->get("text_2D");
 	m_text_manager->render_text(text_shader, "Health:: " + std::to_string(m_player_health), 10.f, (float)engine::application::window().height() - 25.f, 0.5f, glm::vec4(0.f, 1.f, 0.f, 1.f));
 	m_text_manager->render_text(text_shader, "Ammo:: " + std::to_string(m_ammoLeft), 10.f, 10.f, 0.5f, glm::vec4(0.f, 0.f, 1.f, 1.f));

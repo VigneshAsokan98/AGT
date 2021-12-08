@@ -10,7 +10,7 @@ public:
 
 	void init();
 	void on_update(const engine::timestep& time_step, const engine::perspective_camera& camera);
-	void on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera);
+	void on_render(const engine::ref<engine::shader>& shader);
 	void SetPlayerHealth(float health) { m_player_health = health; }
 	void SetAmmo(int ammo) { m_ammoLeft = ammo; }
 private:

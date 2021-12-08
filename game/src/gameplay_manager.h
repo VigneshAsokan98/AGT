@@ -7,6 +7,7 @@
 #include "turret_enemy.h"
 #include "hud_manager.h"
 #include "cannonball.h"
+#include "pickup_manager.h"
 
 
 class gameplay_manager : public game_fsm
@@ -28,10 +29,13 @@ private:
 	void Create_Player();
 	void Create_Enemies();
 	void Check_Player_Collision(glm::vec3 player_pos);
+	void Check_Bullet_collision();
+	void FireBullet();
 
 	engine::ref<engine::skybox>										m_skybox{};
 	hud_manager														m_HUD{};
 	player															m_player{};
+	pickup_manager													m_pickup_manager{};
 	turret_enemy													m_enemy_player{};
 	std::vector <enemy>												m_enemies{};
 	engine::ref<engine::text_manager>								m_text_manager{};
@@ -46,19 +50,20 @@ private:
 	engine::ref<engine::game_object>								m_car{};
 	std::vector<engine::ref<engine::game_object>>					m_enemy_objects{};
 	std::vector<engine::ref<engine::game_object>>					m_huts{};
-	engine::ref<engine::game_object>								m_Health_Pickup{};
-	engine::ref<engine::game_object>								m_bullets{};
+	engine::ref<engine::game_object>								m_bullet{};
 	std::vector<engine::ref<engine::game_object>>					m_tree{};
 	std::vector<engine::ref<engine::game_object>>					m_game_objects{};
 	cannonball														m_cannonball;
+	float															m_cannonTimer = 0.f;
 
 	engine::bounding_box											m_car_box;
+	engine::bounding_box											m_Bullet_box;
 	std::vector<engine::bounding_box>								m_hut_boxes;
 	std::vector<engine::bounding_box>								m_tree_boxes;
 
 	engine::perspective_camera										m_3d_camera;
+	engine::orthographic_camera										m_2d_camera;
 
-	std::vector<glm::vec3>											m_pickups_Spawnpoints;
 	std::vector<glm::vec3>											m_enemy_spawnpoints;
 
 };
