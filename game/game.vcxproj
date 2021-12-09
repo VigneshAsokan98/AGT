@@ -134,8 +134,8 @@
   <ItemGroup>
     <ClInclude Include="src\Billboard.h" />
     <ClInclude Include="src\cannonball.h" />
+    <ClInclude Include="src\car_enemy.h" />
     <ClInclude Include="src\cross_fade.h" />
-    <ClInclude Include="src\enemy.h" />
     <ClInclude Include="src\gameover.h" />
     <ClInclude Include="src\gameplay_manager.h" />
     <ClInclude Include="src\game_controller.h" />
@@ -151,8 +151,8 @@
   <ItemGroup>
     <ClCompile Include="src\Billboard.cpp" />
     <ClCompile Include="src\cannonball.cpp" />
+    <ClCompile Include="src\car_enemy.cpp" />
     <ClCompile Include="src\cross_fade.cpp" />
-    <ClCompile Include="src\enemy.cpp" />
     <ClCompile Include="src\gameover.cpp" />
     <ClCompile Include="src\gameplay_manager.cpp" />
     <ClCompile Include="src\game_controller.cpp" />

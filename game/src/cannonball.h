@@ -10,7 +10,7 @@ public:
 	~cannonball();
 
 	void initialise(engine::ref<engine::game_object> object);
-	void shoot(const player& _player, float kick);
+	void shoot(const glm::vec3& _position, const glm::vec3& _forward, float kick);
 	void on_update(const engine::timestep& time_step);
 	void on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera);
 

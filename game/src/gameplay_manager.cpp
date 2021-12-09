@@ -18,6 +18,7 @@ gameplay_manager::gameplay_manager(GameState state):
 	Create_Effects();
 	Create_Environment_Objects();
 	Create_Player();
+	Create_Enemies();
 
 	m_HUD.init();
 	m_pickup_manager.Init();
@@ -29,12 +30,13 @@ gameplay_manager::gameplay_manager(GameState state):
 void gameplay_manager::Init_Spawnpoints()
 {
 	//Spawn points for Enemies
-	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
-	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
-	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
-	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
-	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
-	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.f, 0.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(5.f, 0.5f, -7.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(7.f, 0.5f, 20.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(-5.f, 0.5f, -10.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(9.f, 0.5f, -5.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(-25.f, 0.5f, 10.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(-32.f, 0.5f, -28.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(20.f, 0.5f, -18.f));
 }
 void gameplay_manager::Create_Effects()
 {
@@ -193,7 +195,7 @@ void gameplay_manager::Create_Player()
 	car_props.meshes = car_model->meshes();
 	car_props.textures = car_model->textures();
 	float car_scale = glm::max(car_model->size().x, glm::max(car_model->size().y, car_model->size().z));
-	car_props.position = { 0.f, .75f, 10.f };
+	car_props.position = { 0.f, .5f, 10.f };
 	car_props.scale = glm::vec3(car_scale);
 	car_props.bounding_shape = car_model->size();
 	car_props.mass = .5f;
@@ -201,22 +203,56 @@ void gameplay_manager::Create_Player()
 	m_car = engine::game_object::create(car_props);
 
 	m_player.initialise(m_car);
-	m_car_box.set_box(car_props.bounding_shape.x * car_props.scale.x, car_props.bounding_shape.y * car_props.scale.x, car_props.bounding_shape.z * car_props.scale.x, car_props.position);
+	m_Player_box.set_box(car_props.bounding_shape.x * car_props.scale.x, car_props.bounding_shape.y * car_props.scale.x, car_props.bounding_shape.z * car_props.scale.x, car_props.position);
 }
 void gameplay_manager::Create_Enemies()
 {
-	engine::ref <engine::model> turret_model = engine::model::create("assets/models/static/redcar1.obj");
+	int spawn_idx = 0;
+	//Load Turrets
+	engine::ref <engine::model> turret_model = engine::model::create("assets/models/static/Turret.obj");
 	engine::game_object_properties turret_props;
 	turret_props.meshes = turret_model->meshes();
 	turret_props.textures = turret_model->textures();
 	float turret_scale = glm::max(turret_model->size().x, glm::max(turret_model->size().y, turret_model->size().z));
-	turret_props.position = { -5.f, 0.f, 0.f };
+	
 	turret_props.scale = glm::vec3(turret_scale);
 	turret_props.bounding_shape = turret_model->size();
-	engine::ref<engine::game_object> enemy_object = engine::game_object::create(turret_props);
 
-	m_enemy_player.init(enemy_object);
-	m_enemies.push_back(m_enemy_player);
+	for (int i = 0; i < 3; i++)
+	{
+		turret_props.position = m_enemy_spawnpoints.at(spawn_idx);
+		spawn_idx++;
+		engine::ref<engine::game_object> enemy_object = engine::game_object::create(turret_props);
+		turret_enemy _turrent;
+		_turrent.init(enemy_object);
+		m_enemy_turrents.push_back(_turrent);
+		engine::bounding_box	turret_box;
+		turret_box.set_box(2.f, 1.f, 2.f, turret_props.position);
+		m_Turret_boxes.push_back(turret_box);
+	}
+
+	//Load Enemy Cars
+	engine::ref <engine::model> car_model = engine::model::create("assets/models/static/BlueCar.obj");
+	engine::game_object_properties car_props;
+	car_props.meshes = car_model->meshes();
+	car_props.textures = car_model->textures();
+	float car_scale = glm::max(car_model->size().x, glm::max(car_model->size().y, car_model->size().z));
+
+	car_props.scale = glm::vec3(car_scale);
+	car_props.bounding_shape = car_model->size();
+
+	for (int i = 0; i < 3; i++)
+	{
+		car_props.position = m_enemy_spawnpoints.at(spawn_idx);
+		spawn_idx++;
+		engine::ref<engine::game_object> enemy_object = engine::game_object::create(car_props);
+		car_enemy _carenemy;
+		_carenemy.init(enemy_object);
+		m_enemy_cars.push_back(_carenemy);
+		engine::bounding_box	carenemy_box;
+		carenemy_box.set_box(2.f, 1.f, 2.f, car_props.position);
+		m_Enemycar_boxes.push_back(carenemy_box);
+	}
 }
 
 gameplay_manager::~gameplay_manager()
@@ -243,10 +279,23 @@ void gameplay_manager::on_update(const engine::timestep& time_step)
 	{
 		m_player.activatePickup(_type);
 		m_pickup_manager.disablePickup();
+		m_HUD.SetPlayerHealth(m_player.GetHealth());
+		m_HUD.SetAmmo(m_player.getAmmo());
 	}
 	m_player.on_update(time_step);
-	m_car_box.on_update(m_player.object()->position(), m_player.object()->forward());
-	m_Bullet_box.on_update(m_bullet->position(), m_player.object()->forward());
+	m_Player_box.on_update(m_player.object()->position());
+
+	//update Enemies
+	for (int i = 0; i < 3; i++)
+	{
+		m_enemy_turrents.at(i).on_update(time_step, m_player.object()->position());
+		m_Turret_boxes.at(i).on_update(m_enemy_turrents.at(i).object()->position());
+		m_enemy_cars.at(i).on_update(time_step, m_player.object()->position());
+		m_Enemycar_boxes.at(i).on_update(m_enemy_cars.at(i).object()->position());
+	}
+
+
+	m_Bullet_box.on_update(m_bullet->position());
 	m_cannonball.on_update(time_step);
 
 	m_bullet->set_position(m_bullet->position() + m_bullet->velocity() * (float)time_step);
@@ -257,6 +306,11 @@ void gameplay_manager::on_update(const engine::timestep& time_step)
 
 	//Update Timer to shoot Cannonball
 	m_cannonTimer += time_step;
+
+	//Clamp Player position
+	float contraint = 35.f;
+	if (glm::abs(m_player.object()->position().x) > contraint || glm::abs(m_player.object()->position().z) > contraint)
+		m_player.object()->set_position(pos);
 }
 void gameplay_manager::Check_Bullet_collision()
 {
@@ -274,21 +328,55 @@ void gameplay_manager::Check_Bullet_collision()
 			m_bullet->set_velocity(glm::vec3(0.f));
 		}
 	}
+	for (int i = 0; i < m_Turret_boxes.size(); i++)
+	{
+		if (m_Turret_boxes.at(i).collision(m_Bullet_box))
+		{
+			m_bullet->set_velocity(glm::vec3(0.f));
+			m_bullet->set_position(glm::vec3(900.f));
+			m_enemy_turrents.at(i).TakeDamage(25.f);
+		}
+	}
+	for (int i = 0; i < m_Enemycar_boxes.size(); i++)
+	{
+		if (m_Enemycar_boxes.at(i).collision(m_Bullet_box))
+		{
+			m_bullet->set_velocity(glm::vec3(0.f));
+			m_bullet->set_position(glm::vec3(900.f));
+			m_enemy_cars.at(i).TakeDamage(20.f);
+		}
+	}
 }
 void gameplay_manager::Check_Player_Collision(glm::vec3 player_pos)
 {
 	for each (engine::bounding_box box in m_hut_boxes)
 	{
-		if (box.collision(m_car_box))
+		if (box.collision(m_Player_box))
 		{
 			m_player.object()->set_position(player_pos);
 		}
 	}
 	for each (engine::bounding_box box in m_tree_boxes)
 	{
-		if (box.collision(m_car_box))
+		if (box.collision(m_Player_box))
 		{
 			m_player.object()->set_position(player_pos);
+		}
+	}
+	for (int i = 0; i < m_enemy_turrents.size(); i++)
+	{
+		if (m_enemy_turrents.at(i).Check_Bullet_collision(m_Player_box))
+		{
+			m_player.impact(10.f);
+			m_HUD.SetPlayerHealth(m_player.GetHealth());
+		}
+	}
+	for (int i = 0; i < m_enemy_cars.size(); i++)
+	{
+		if (m_enemy_cars.at(i).Check_Bullet_collision(m_Player_box))
+		{
+			m_player.impact(10.f);
+			m_HUD.SetPlayerHealth(m_player.GetHealth());
 		}
 	}
 }
@@ -321,7 +409,7 @@ void gameplay_manager::on_render()
 	engine::renderer::submit(mesh_shader, m_terrain);
 	m_pickup_manager.on_render(mesh_shader);
 	m_cannonball.on_render(mesh_shader,m_3d_camera);
-	m_car_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
+	m_Player_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
 	m_Bullet_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
 	for each (engine::bounding_box box in m_hut_boxes)
 	{
@@ -341,8 +429,20 @@ void gameplay_manager::on_render()
 	}
 
 	engine::renderer::submit(mesh_shader, m_bullet);
-
 	m_player.on_render(mesh_shader, m_3d_camera);
+
+	//Render Enemies
+	for (int i = 0; i < 3; i++)
+	{
+		//Render Turrets
+		m_enemy_turrents.at(i).on_render(mesh_shader, m_3d_camera);
+		engine::renderer::submit(mesh_shader, m_enemy_turrents.at(i).object());
+		m_Turret_boxes.at(i).on_render(2.5f, 0.f, 0.f, mesh_shader);
+		//Render Cars
+		m_enemy_cars.at(i).on_render(mesh_shader, m_3d_camera);
+		engine::renderer::submit(mesh_shader, m_enemy_cars.at(i).object());
+		m_Enemycar_boxes.at(i).on_render(2.5f, 0.f, 0.f, mesh_shader);
+	}
 
 	m_material->submit(mesh_shader);
 	for (int idx = 0; idx < m_tree.size(); idx++)
@@ -369,18 +469,13 @@ void gameplay_manager::on_event(engine::event& event)
 		auto& e = dynamic_cast<engine::key_pressed_event&>(event);
 		if (e.key_code() == engine::key_codes::KEY_Q && m_cannonTimer >= 10.f)
 		{
-			m_cannonball.shoot(m_player, 100.f);
+			m_cannonball.shoot(m_player.object()->position(), m_player.object()->forward(), 100.f);
 			//Reset timer
 			m_cannonTimer = 0.f;
 		}
 		if (e.key_code() == engine::key_codes::KEY_E)
 		{
 			FireBullet();
-		}
-		if (e.key_code() == engine::key_codes::KEY_J)
-		{
-			m_bullet->set_velocity(glm::vec3(0.f));
-			m_bullet->set_position(m_player.object()->position());
 		}
 	}
 }

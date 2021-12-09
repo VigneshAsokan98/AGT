@@ -3,8 +3,8 @@
 #include "game_fsm.h"
 #include "engine/entities/bounding_box.h"
 #include "player.h"
-#include "enemy.h"
 #include "turret_enemy.h"
+#include "car_enemy.h"
 #include "hud_manager.h"
 #include "cannonball.h"
 #include "pickup_manager.h"
@@ -36,8 +36,8 @@ private:
 	hud_manager														m_HUD{};
 	player															m_player{};
 	pickup_manager													m_pickup_manager{};
-	turret_enemy													m_enemy_player{};
-	std::vector <enemy>												m_enemies{};
+	std::vector<turret_enemy>										m_enemy_turrents{};
+	std::vector<car_enemy>											m_enemy_cars{};
 	engine::ref<engine::text_manager>								m_text_manager{};
 	engine::ref<engine::bullet_manager>								m_physics_manager{};
 	engine::DirectionalLight										m_directionalLight;
@@ -56,10 +56,12 @@ private:
 	cannonball														m_cannonball;
 	float															m_cannonTimer = 0.f;
 
-	engine::bounding_box											m_car_box;
+	engine::bounding_box											m_Player_box;
 	engine::bounding_box											m_Bullet_box;
 	std::vector<engine::bounding_box>								m_hut_boxes;
 	std::vector<engine::bounding_box>								m_tree_boxes;
+	std::vector<engine::bounding_box>								m_Turret_boxes;
+	std::vector<engine::bounding_box>								m_Enemycar_boxes;
 
 	engine::perspective_camera										m_3d_camera;
 	engine::orthographic_camera										m_2d_camera;

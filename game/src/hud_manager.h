@@ -21,6 +21,5 @@ private:
 
 
 	int													m_ammoLeft = 0;
-	int													m_total_ammo = 0;
 	int													m_player_health = 100;
 };

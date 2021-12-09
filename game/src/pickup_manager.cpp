@@ -99,7 +99,7 @@ void pickup_manager::on_update(const engine::timestep& time_step)
 }
 void pickup_manager::SpawnPickup()
 {
-	pickup_manager::Type type = pickup_manager::Type::Shield;//(pickup_manager::Type)(std::rand() % (4 - 1) + 1);
+	pickup_manager::Type type = (pickup_manager::Type)(std::rand() % (4 - 1) + 1);
 	switch (type)
 	{
 	case pickup_manager::Type::None:
@@ -131,7 +131,7 @@ void pickup_manager::disablePickup()
 	m_Health_Pickup->set_position(glm::vec3(5000.f));
 	m_Ammo_Pickup->set_position(glm::vec3(5000.f));
 	m_Shield_Pickup->set_position(glm::vec3(5000.f));
-
+	m_timer = 0.f;
 	m_CurrentActive_Pickup = pickup_manager::Type::None;
 }
 pickup_manager::Type pickup_manager::checkCollision(glm::vec3 playerpos)

@@ -15,7 +15,7 @@ void cannonball::initialise(engine::ref<engine::game_object> object)
 	m_explosionFX = Billboard::create("assets/textures/Explosion.png", 8, 6, 48);
 }
 
-void cannonball::shoot(const player& _player, float kick)
+void cannonball::shoot(const glm::vec3& _position, const glm::vec3& _forward, float kick)
 {
 	_renderON = true;
 	m_object->set_velocity(glm::vec3(0.f));
@@ -27,12 +27,10 @@ void cannonball::shoot(const player& _player, float kick)
 	m_contact_time = 0.0f;
 
 	// Set the canonball to the current Player position
-	glm::vec3 pos = _player.object()->position();
-	glm::vec3 front = _player.object()->forward();
 	glm::vec3 up = glm::vec3(0.f,75.f,0.f);
-	m_object->set_position(pos);
+	m_object->set_position(_position);
 
-	glm::vec3 force = -front * kick + up ;
+	glm::vec3 force = -_forward * kick + up ;
 	m_instantaneous_acceleration = force / m_object->mass();
 
 	glm::vec3 torque = glm::vec3(1, 0, 0);
@@ -40,8 +38,8 @@ void cannonball::shoot(const player& _player, float kick)
 	m_instantaneous_angular_acceleration = torque / m_rotational_inertia;
 
 	// Determine rotation angles of camera (from Lab 4)
-	m_theta = engine::PI / 2.f - acos(front.y);
-	m_phi = atan2(front.x, front.z);
+	m_theta = engine::PI / 2.f - acos(_forward.y);
+	m_phi = atan2(_forward.x, _forward.z);
 }
 
 void cannonball::on_update(const engine::timestep& time_step)
@@ -110,7 +108,7 @@ bool cannonball::collision_detection(float y_plane)
 void cannonball::Explode()
 {
 	_renderON = false;
-	m_explosionFX->activate(m_object->position(), 2.f, 2.f);
+	m_explosionFX->activate(m_object->position(), 5.f, 5.f);
 }
 void cannonball::collision_response(float y_plane)
 {

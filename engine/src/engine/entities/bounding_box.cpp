@@ -61,10 +61,9 @@ void engine::bounding_box::set_box(float width, float height, float depth, glm::
 	m_mesh = engine::mesh::create(grid_vertices, grid_indices);
 }
 
-void engine::bounding_box::on_update(glm::vec3 position, glm::vec3 forward)
+void engine::bounding_box::on_update(glm::vec3 position)
 {
 	m_bottom = position - glm::vec3(m_width/2.f, 0.f, m_depth/2.f);
-	m_forward = forward;
 }
 
 void engine::bounding_box::on_render(float r, float g, float b, const engine::ref<engine::shader>& shader)

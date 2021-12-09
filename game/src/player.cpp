@@ -7,7 +7,7 @@ using namespace engine;
 
 player::player()
 {
-	m_speed = 5.0f;
+	m_speed = 3.0f;
 	m_can_move = true;
 }
 player::~player()
@@ -40,7 +40,6 @@ void player::on_update(const engine::timestep& time_step)
 	/*m_object->set_position(m_object->position() += m_object->forward() * m_speed *
 		(float)time_step);*/
 	update_acceleration(time_step);
-	
 
 	//update headlight position
 	glm::vec3 Headlight_position = m_object->position() - m_object->forward() * 1.5f;
@@ -129,8 +128,14 @@ void player::accelerate(float _force)
 	m_instantaneous_acceleration = force / m_object->mass();
 }
 
+void player::impact(float damage)
+{
+	if (!_isShieldActive)
+		m_playerHealth -= damage;
+}
 void player::SetHealth(int _newhealth)
 {
+
 	m_playerHealth = _newhealth;
 }
 void player::ResetAmmo()
