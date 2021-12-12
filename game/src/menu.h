@@ -34,7 +34,6 @@ private:
 	int													num_point_lights = 1;
 	engine::orthographic_camera							m_2d_camera;
 
-	engine::ref<cross_fade>								m_menuBG{};
 	engine::ref<cross_fade>								m_Title{};
 
 	engine::ref<engine::material>						m_lightsource_material{};

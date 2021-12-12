@@ -16,7 +16,6 @@ menu::menu(GameState state)
 
 	m_text_manager = engine::text_manager::create();
 
-	m_menuBG = cross_fade::create("assets/textures/MenuBG.png", 2.0f, 1.6f, 0.9f);
 	m_Title = cross_fade::create("assets/textures/GameTitle.png", 2.0f, 1.6f, 0.9f);
 	m_material = engine::material::create(.0f, glm::vec3(1.0f, 0.1f, 0.07f),
 		glm::vec3(1.0f, 0.1f, 0.07f), glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
@@ -40,13 +39,11 @@ menu::~menu()
 
 void menu::init()
 {
-	m_menuBG->activate();
 	m_Title->activate();
 }
 void menu::on_update(const engine::timestep& time_step)
 {
-	m_menuBG->on_update(time_step);
-	m_menuBG->activate();
+
 	m_Title->on_update(time_step);
 	m_Title->activate();
 	m_2d_camera.on_update(time_step);
@@ -100,7 +97,6 @@ void menu::on_render()
 	}
 
 	engine::renderer::begin_scene(m_2d_camera, mesh_shader);
-	//m_menuBG->on_render(mesh_shader);
 	m_Title->on_render(mesh_shader);
 	engine::renderer::end_scene();
 }

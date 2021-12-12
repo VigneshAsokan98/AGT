@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "cannonball.h"
+#include "game_controller.h"
 
 cannonball::cannonball()
 {}
@@ -109,6 +110,7 @@ void cannonball::Explode()
 {
 	_renderON = false;
 	m_explosionFX->activate(m_object->position(), 5.f, 5.f);
+	m_exploded = true;
 }
 void cannonball::collision_response(float y_plane)
 {

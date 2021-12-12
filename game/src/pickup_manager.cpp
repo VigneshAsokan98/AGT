@@ -77,18 +77,24 @@ void pickup_manager::Init()
 	Shield_props.scale = glm::vec3(Shield_scale);
 	m_Shield_Pickup = engine::game_object::create(Shield_props);
 
+	//headLights
+	m_pointLight.Color = glm::vec3(1.f, 1.f, 1.f);
+	m_pointLight.AmbientIntensity = 0.2f;
+	m_pointLight.DiffuseIntensity = 0.5f;
+	m_pointLight.Position = glm::vec3(800.f);
+
 	disablePickup();
 }
 void pickup_manager::on_update(const engine::timestep& time_step)
 {
 	m_timer += time_step;
-	if (m_timer > 10.f && !m_pickup_active)
+	if (m_timer > 8.f && !m_pickup_active)
 	{
 		m_pickup_active = true;
 		SpawnPickup();
 		m_timer = 0.f;
 	}
-	if (m_timer > 5.f && m_pickup_active)
+	if (m_timer > 10.f && m_pickup_active)
 	{
 		m_pickup_active = false;
 		disablePickup();
@@ -99,8 +105,11 @@ void pickup_manager::on_update(const engine::timestep& time_step)
 }
 void pickup_manager::SpawnPickup()
 {
-	pickup_manager::Type type = (pickup_manager::Type)(std::rand() % (4 - 1) + 1);
-	switch (type)
+	_type++;
+	if (_type > 3)
+		_type = 1;
+
+	switch ((pickup_manager::Type)_type)
 	{
 	case pickup_manager::Type::None:
 		break;
@@ -119,9 +128,9 @@ void pickup_manager::SpawnPickup()
 	default:
 		break;
 	}
-
 	m_CurrentPosition = m_Spawnpoints.at(m_spawn_idx);
 
+	m_pointLight.Position = m_CurrentPosition;
 	m_spawn_idx++;
 	if (m_Spawnpoints.size() <= m_spawn_idx )
 		m_spawn_idx = 0;
@@ -131,6 +140,7 @@ void pickup_manager::disablePickup()
 	m_Health_Pickup->set_position(glm::vec3(5000.f));
 	m_Ammo_Pickup->set_position(glm::vec3(5000.f));
 	m_Shield_Pickup->set_position(glm::vec3(5000.f));
+	m_pointLight.Position = glm::vec3(800.f);
 	m_timer = 0.f;
 	m_CurrentActive_Pickup = pickup_manager::Type::None;
 }
@@ -148,4 +158,7 @@ void pickup_manager::on_render(const engine::ref<engine::shader>& shader)
 	engine::renderer::submit(shader, m_Health_Pickup);
 	engine::renderer::submit(shader, m_Ammo_Pickup);
 	engine::renderer::submit(shader, m_Shield_Pickup);
+	std::dynamic_pointer_cast<engine::gl_shader>(shader)->
+		set_uniform("gNumPointLights", (int)num_point_lights);
+	m_pointLight.submit(shader, 0);
 }

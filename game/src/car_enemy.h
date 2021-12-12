@@ -25,6 +25,7 @@ public:
 private:
 	glm::vec3													m_init_position;
 	std::vector<glm::vec3>										m_wanderpoints;
+
 	float														m_shootTimer = 0.f;
 	engine::ref< engine::game_object>							m_object;
 	engine::ref<Billboard>										m_health_bar;

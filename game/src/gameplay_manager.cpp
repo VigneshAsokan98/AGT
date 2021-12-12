@@ -11,7 +11,6 @@ gameplay_manager::gameplay_manager(GameState state):
 	m_2d_camera(-1.6f, 1.6f, -0.9f, 0.9f), m_3d_camera((float)engine::application::window().width(), (float)engine::application::window().height())
 {
 	m_state = state;
-
 	//init Spawnpoints
 	Init_Spawnpoints();
 
@@ -23,6 +22,19 @@ gameplay_manager::gameplay_manager(GameState state):
 	m_HUD.init();
 	m_pickup_manager.Init();
 
+
+	// Initialise audio and play background music
+	m_audio_manager = engine::audio_manager::instance();
+	m_audio_manager->init();
+	m_audio_manager->load_sound("assets/audio/bullet.wav", engine::sound_type::spatialised, "Bullet"); // Royalty free sound from freesound.org
+	m_audio_manager->load_sound("assets/audio/hit.wav", engine::sound_type::spatialised, "Hit"); // Royalty free sound from freesound.org
+	m_audio_manager->load_sound("assets/audio/Explosion.mp3", engine::sound_type::spatialised, "Explosion"); // Royalty free sound from freesound.org
+	m_audio_manager->create_high_pass_filter();
+	m_audio_manager->set_high_pass_filter(10000.f);
+	m_audio_manager->create_low_pass_filter();
+	m_audio_manager->set_low_pass_filter(20000.f);
+
+	_playerhealth = 100;
 	m_physics_manager = engine::bullet_manager::create(m_game_objects);
 	m_text_manager = engine::text_manager::create();
 
@@ -35,7 +47,7 @@ void gameplay_manager::Init_Spawnpoints()
 	m_enemy_spawnpoints.push_back(glm::vec3(-5.f, 0.5f, -10.f));
 	m_enemy_spawnpoints.push_back(glm::vec3(9.f, 0.5f, -5.f));
 	m_enemy_spawnpoints.push_back(glm::vec3(-25.f, 0.5f, 10.f));
-	m_enemy_spawnpoints.push_back(glm::vec3(-32.f, 0.5f, -28.f));
+	m_enemy_spawnpoints.push_back(glm::vec3(-5.f, 0.5f, -28.f));
 	m_enemy_spawnpoints.push_back(glm::vec3(20.f, 0.5f, -18.f));
 }
 void gameplay_manager::Create_Effects()
@@ -79,7 +91,7 @@ void gameplay_manager::Create_Environment_Objects()
 
 	// Load the terrain texture and create a terrain mesh. Create a terrain object. Set its properties
 	std::vector<engine::ref<engine::texture_2d>> terrain_textures = { engine::texture_2d::create("assets/textures/terrain.bmp", false) };
-	engine::ref<engine::terrain> terrain_shape = engine::terrain::create(100.f, 0.5f, 100.f);
+	engine::ref<engine::terrain> terrain_shape = engine::terrain::create(50.f, 0.5f, 50.f);
 	engine::game_object_properties terrain_props;
 	terrain_props.meshes = { terrain_shape->mesh() };
 	terrain_props.textures = terrain_textures;
@@ -155,8 +167,8 @@ void gameplay_manager::Create_Environment_Objects()
 
 	for (int i = 0; i < 6; i++)
 	{
-		float PosX = (float)((rand() % (30 + 30)) - 30);
-		float PosZ = (float)((rand() % (30 + 30)) - 30);
+		float PosX = (float)((rand() % (40 + 40)) - 40);
+		float PosZ = (float)((rand() % (40 + 40)) - 40);
 		hut_props.scale = { 0.5f, .5f, .5f };
 		hut_props.position = { PosX , 1.f, PosZ };
 		engine::bounding_box	hut_box;
@@ -175,7 +187,7 @@ void gameplay_manager::Create_Environment_Objects()
 	sphere_props.bounding_shape = glm::vec3(.25f);
 	sphere_props.type = 1;
 	sphere_props.restitution = 0.5f;
-	sphere_props.mass = 0.6f;
+	sphere_props.mass = .8f;
 	engine::ref<engine::game_object> _ball = engine::game_object::create(sphere_props);
 
 	m_game_objects.push_back(m_terrain);
@@ -266,12 +278,8 @@ void gameplay_manager::init()
 void gameplay_manager::on_update(const engine::timestep& time_step)
 {
 	glm::vec3 pos = m_player.object()->position();
-	m_3d_camera.on_update(time_step);
 
-	glm::vec3 camera_position = m_player.object()->position() + (glm::vec3(0.f, 3.f, 0.f) + m_player.object()->forward() * 10.f);
-	glm::vec3 camera_lookat_position = m_player.object()->position() - m_player.object()->forward() * 4.f;
-
-	m_3d_camera.set_view_matrix( camera_position, camera_lookat_position);
+	Update3dCamera(time_step);
 	m_HUD.on_update(time_step, m_3d_camera);
 	m_pickup_manager.on_update(time_step);
 	pickup_manager::Type _type = m_pickup_manager.checkCollision(m_player.object()->position());
@@ -282,7 +290,7 @@ void gameplay_manager::on_update(const engine::timestep& time_step)
 		m_HUD.SetPlayerHealth(m_player.GetHealth());
 		m_HUD.SetAmmo(m_player.getAmmo());
 	}
-	m_player.on_update(time_step);
+	m_player.on_update(time_step,m_3d_camera);
 	m_Player_box.on_update(m_player.object()->position());
 
 	//update Enemies
@@ -308,9 +316,57 @@ void gameplay_manager::on_update(const engine::timestep& time_step)
 	m_cannonTimer += time_step;
 
 	//Clamp Player position
-	float contraint = 35.f;
+	float contraint = 50.f;
 	if (glm::abs(m_player.object()->position().x) > contraint || glm::abs(m_player.object()->position().z) > contraint)
 		m_player.object()->set_position(pos);
+
+	_playerhealth = m_player.GetHealth();
+
+	m_audio_manager->update_with_camera(m_3d_camera);
+
+	if (m_cannonball.m_exploded == true)
+	{
+		m_cannonball.m_exploded = false;
+		m_cannonboll_box.set_box(5.f, 5.f, 5.f, m_cannonball.object()->position());
+		m_audio_manager->play_spatialised_sound("Explosion", m_3d_camera.position(), m_cannonball.object()->position());
+		checkCannonCollision();
+	}
+}
+void gameplay_manager::Update3dCamera(const engine::timestep& time_step)
+{
+	m_3d_camera.on_update(time_step);
+
+	glm::vec3 camera_position = m_player.object()->position() + (glm::vec3(0.f, 3.f, 0.f) + m_player.object()->forward() * 10.f);
+	glm::vec3 camera_lookat_position = m_player.object()->position() - m_player.object()->forward() * 4.f;
+
+	m_3d_camera.set_view_matrix(camera_position, camera_lookat_position);
+}
+void gameplay_manager::checkCannonCollision()
+{
+	for (int i = 0; i < m_Turret_boxes.size(); i++)
+	{
+		if (m_Turret_boxes.at(i).collision(m_cannonboll_box))
+		{
+			m_bullet->set_velocity(glm::vec3(0.f));
+			m_bullet->set_position(glm::vec3(900.f));
+			m_enemy_turrents.at(i).TakeDamage(100.f);
+			m_score += 1.f;
+			m_HUD.SetScore(m_score);
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
+		}
+	}
+	for (int i = 0; i < m_Enemycar_boxes.size(); i++)
+	{
+		if (m_Enemycar_boxes.at(i).collision(m_cannonboll_box))
+		{
+			m_bullet->set_velocity(glm::vec3(0.f));
+			m_bullet->set_position(glm::vec3(900.f));
+			m_enemy_cars.at(i).TakeDamage(100.f);
+			m_score += 1.f;
+			m_HUD.SetScore(m_score);
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
+		}
+	}
 }
 void gameplay_manager::Check_Bullet_collision()
 {
@@ -319,6 +375,7 @@ void gameplay_manager::Check_Bullet_collision()
 		if (box.collision(m_Bullet_box))
 		{
 			m_bullet->set_velocity(glm::vec3(0.f));
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
 		}
 	}
 	for each (engine::bounding_box box in m_tree_boxes)
@@ -326,6 +383,7 @@ void gameplay_manager::Check_Bullet_collision()
 		if (box.collision(m_Bullet_box))
 		{
 			m_bullet->set_velocity(glm::vec3(0.f));
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
 		}
 	}
 	for (int i = 0; i < m_Turret_boxes.size(); i++)
@@ -335,6 +393,9 @@ void gameplay_manager::Check_Bullet_collision()
 			m_bullet->set_velocity(glm::vec3(0.f));
 			m_bullet->set_position(glm::vec3(900.f));
 			m_enemy_turrents.at(i).TakeDamage(25.f);
+			m_score += .25f;
+			m_HUD.SetScore(m_score);
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
 		}
 	}
 	for (int i = 0; i < m_Enemycar_boxes.size(); i++)
@@ -344,6 +405,9 @@ void gameplay_manager::Check_Bullet_collision()
 			m_bullet->set_velocity(glm::vec3(0.f));
 			m_bullet->set_position(glm::vec3(900.f));
 			m_enemy_cars.at(i).TakeDamage(20.f);
+			m_score += .2f;
+			m_HUD.SetScore(m_score);
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
 		}
 	}
 }
@@ -354,6 +418,7 @@ void gameplay_manager::Check_Player_Collision(glm::vec3 player_pos)
 		if (box.collision(m_Player_box))
 		{
 			m_player.object()->set_position(player_pos);
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
 		}
 	}
 	for each (engine::bounding_box box in m_tree_boxes)
@@ -361,6 +426,7 @@ void gameplay_manager::Check_Player_Collision(glm::vec3 player_pos)
 		if (box.collision(m_Player_box))
 		{
 			m_player.object()->set_position(player_pos);
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
 		}
 	}
 	for (int i = 0; i < m_enemy_turrents.size(); i++)
@@ -369,6 +435,7 @@ void gameplay_manager::Check_Player_Collision(glm::vec3 player_pos)
 		{
 			m_player.impact(10.f);
 			m_HUD.SetPlayerHealth(m_player.GetHealth());
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
 		}
 	}
 	for (int i = 0; i < m_enemy_cars.size(); i++)
@@ -377,6 +444,21 @@ void gameplay_manager::Check_Player_Collision(glm::vec3 player_pos)
 		{
 			m_player.impact(10.f);
 			m_HUD.SetPlayerHealth(m_player.GetHealth());
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
+		}
+	}
+	for (int i = 0; i < m_Turret_boxes.size(); i++)
+	{
+		if (m_Turret_boxes.at(i).collision(m_Player_box))
+		{
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
+		}
+	}
+	for (int i = 0; i < m_Enemycar_boxes.size(); i++)
+	{
+		if (m_Enemycar_boxes.at(i).collision(m_Player_box))
+		{
+			m_audio_manager->play_spatialised_sound("Hit", m_3d_camera.position(), m_player.object()->position());
 		}
 	}
 }
@@ -409,16 +491,16 @@ void gameplay_manager::on_render()
 	engine::renderer::submit(mesh_shader, m_terrain);
 	m_pickup_manager.on_render(mesh_shader);
 	m_cannonball.on_render(mesh_shader,m_3d_camera);
-	m_Player_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
-	m_Bullet_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
-	for each (engine::bounding_box box in m_hut_boxes)
+	/*m_Player_box.on_render(2.5f, 0.f, 0.f, mesh_shader);
+	m_Bullet_box.on_render(2.5f, 0.f, 0.f, mesh_shader);*/
+	/*for each (engine::bounding_box box in m_hut_boxes)
 	{
 		box.on_render(2.5f, 0.f, 0.f, mesh_shader);
 	}
 	for each (engine::bounding_box box in m_tree_boxes)
 	{
 		box.on_render(2.5f, 0.f, 0.f, mesh_shader);
-	}
+	}*/
 	m_car_material->submit(mesh_shader);
 	engine::renderer::submit(mesh_shader, m_player.object());
 
@@ -437,11 +519,11 @@ void gameplay_manager::on_render()
 		//Render Turrets
 		m_enemy_turrents.at(i).on_render(mesh_shader, m_3d_camera);
 		engine::renderer::submit(mesh_shader, m_enemy_turrents.at(i).object());
-		m_Turret_boxes.at(i).on_render(2.5f, 0.f, 0.f, mesh_shader);
+		//m_Turret_boxes.at(i).on_render(2.5f, 0.f, 0.f, mesh_shader);
 		//Render Cars
 		m_enemy_cars.at(i).on_render(mesh_shader, m_3d_camera);
 		engine::renderer::submit(mesh_shader, m_enemy_cars.at(i).object());
-		m_Enemycar_boxes.at(i).on_render(2.5f, 0.f, 0.f, mesh_shader);
+		//m_Enemycar_boxes.at(i).on_render(2.5f, 0.f, 0.f, mesh_shader);
 	}
 
 	m_material->submit(mesh_shader);
@@ -451,9 +533,7 @@ void gameplay_manager::on_render()
 	}
 	engine::renderer::end_scene();
 
-	engine::renderer::begin_scene(m_2d_camera, mesh_shader);
-	m_HUD.on_render(mesh_shader);
-	engine::renderer::end_scene();
+	m_HUD.on_render(mesh_shader, m_2d_camera);
 }
 void gameplay_manager::FireBullet()
 {
@@ -461,6 +541,11 @@ void gameplay_manager::FireBullet()
 	m_bullet->set_forward(-m_player.object()->forward());
 	m_bullet->set_rotation_amount(atan2(m_bullet->forward().x, m_bullet->forward().z));
 	m_bullet->set_velocity(m_bullet->forward() * 100.f);
+
+	m_player.updateAmmo();
+	m_HUD.SetAmmo(m_player.getAmmo());
+
+	m_audio_manager->play_spatialised_sound("Bullet", m_3d_camera.position(), m_player.object()->position());
 }
 void gameplay_manager::on_event(engine::event& event)
 {
@@ -473,7 +558,7 @@ void gameplay_manager::on_event(engine::event& event)
 			//Reset timer
 			m_cannonTimer = 0.f;
 		}
-		if (e.key_code() == engine::key_codes::KEY_E)
+		if (e.key_code() == engine::key_codes::KEY_SPACE && m_player.getAmmo() > 0)
 		{
 			FireBullet();
 		}

@@ -20,6 +20,8 @@ private:
 	game_fsm*							m_previous_gamestate_object;
 	game_fsm*							m_gamestates[3];
 
+	engine::ref<engine::audio_manager>  m_audio_manager{};
+	bool								m_mute = false;
 
 	float								m_prev_sphere_y_vel = 0.f;
 

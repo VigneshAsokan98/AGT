@@ -122,7 +122,7 @@ void turret_enemy::Shoot_player()
 	m_bullet->set_position(m_object->position() + glm::vec3(0.f,.5f,0.f));
 	m_bullet->set_forward(m_object->forward());
 	m_bullet->set_rotation_amount(atan2(m_bullet->forward().x, m_bullet->forward().z));
-	m_bullet->set_velocity(m_bullet->forward());
+	m_bullet->set_velocity(m_bullet->forward() * 5.f);
 	m_shootTimer = 0;
 }
 void turret_enemy::on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera)
@@ -138,6 +138,7 @@ void turret_enemy::Respawn()
 {
 	m_object->set_position(m_init_position);
 	m_respawn = false;
+	m_respawnTimer = 0;
 	m_health = 100;
 }
 void turret_enemy::DisableEnemy()

@@ -18,9 +18,13 @@ private:
 	engine::ref<engine::game_object>								m_Health_Pickup{};
 	engine::ref<engine::game_object>								m_Ammo_Pickup{};
 	engine::ref<engine::game_object>								m_Shield_Pickup{};
+	engine::PointLight												m_pointLight;
+	uint32_t														num_point_lights = 1;
+
 	Type															m_CurrentActive_Pickup = Type::None;
 	bool															m_pickup_active = false;
 	float															m_timer = 0.f;
 	std::vector<glm::vec3>											m_Spawnpoints;
 	glm::vec3														m_CurrentPosition;
+	int _type = 1;
 };

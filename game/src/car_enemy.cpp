@@ -152,7 +152,7 @@ void car_enemy::Shoot_player()
 	m_bullet->set_position(m_object->position() + glm::vec3(0.f, .5f, 0.f));
 	m_bullet->set_forward(m_object->forward());
 	m_bullet->set_rotation_amount(atan2(m_bullet->forward().x, m_bullet->forward().z));
-	m_bullet->set_velocity(m_bullet->forward());
+	m_bullet->set_velocity(m_bullet->forward() * 5.f);
 	m_shootTimer = 0;
 }
 void car_enemy::on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera)
@@ -162,12 +162,12 @@ void car_enemy::on_render(const engine::ref<engine::shader>& shader, const engin
 	m_explosionFX->on_render(camera, shader);
 	m_health_bar->on_render(camera, shader);
 	engine::renderer::submit(shader, m_bullet);
-	m_Bullet_box.on_render(2.5f, 0.f, 0.f, shader);
 }
 void car_enemy::Respawn()
 {
 	m_object->set_position(m_init_position);
 	m_respawn = false;
+	m_respawnTimer = 0;
 	m_health = 100;
 }
 void car_enemy::DisableEnemy()

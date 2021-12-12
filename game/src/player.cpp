@@ -8,7 +8,6 @@ using namespace engine;
 player::player()
 {
 	m_speed = 3.0f;
-	m_can_move = true;
 }
 player::~player()
 {
@@ -33,13 +32,15 @@ void player::initialise(engine::ref<engine::game_object> object)
 
 	m_lightsource_material = engine::material::create(1.0f, m_HeadLight.Color,
 		m_HeadLight.Color, m_HeadLight.Color, 1.0f);
+
 }
 
-void player::on_update(const engine::timestep& time_step)
+void player::on_update(const engine::timestep& time_step, const engine::perspective_camera& camera)
 {
 	/*m_object->set_position(m_object->position() += m_object->forward() * m_speed *
 		(float)time_step);*/
-	update_acceleration(time_step);
+	glm::vec3 _prevPos = m_object->position();
+	update_acceleration(time_step, camera);
 
 	//update headlight position
 	glm::vec3 Headlight_position = m_object->position() - m_object->forward() * 1.5f;
@@ -48,7 +49,7 @@ void player::on_update(const engine::timestep& time_step)
 
 	//apply coefficient of restitution
 	m_object->set_velocity(m_object->velocity() * m_object->restitution());
-
+	
 	m_shield->on_update(time_step, m_object->position());
 
 	if (m_ShieldTimer > 10.f && _isShieldActive)
@@ -66,12 +67,15 @@ void player::on_render(const engine::ref<engine::shader>& shader, const engine::
 		set_uniform("gNumSpotLights", (int)num_Spot_lights);
 	m_HeadLight.submit(shader, 0);
 
+	//m_lightsource_material->submit(shader);
+
 	if (_isShieldActive)
 		m_shield->on_render(shader);
 }
 
-void player::update_acceleration(const engine::timestep& time_step)
+void player::update_acceleration(const engine::timestep& time_step, const engine::perspective_camera& camera)
 {
+	
 	glm::vec3 acceleration = m_object->acceleration();
 	glm::vec3 velocity = (m_object->velocity() + (m_object->acceleration() + m_instantaneous_acceleration) * (float)time_step);
 	m_object->set_velocity(velocity);
@@ -79,8 +83,8 @@ void player::update_acceleration(const engine::timestep& time_step)
 
 	m_object->set_rotation_amount(atan2(m_object->forward().x, m_object->forward().z));
 
-	if (m_can_move)
-		move(time_step);
+
+	move(time_step);
 
 	if (glm::length(m_instantaneous_acceleration) > 0 && m_contact_time > 0.05) {
 		m_instantaneous_acceleration = glm::vec3(0.f);
@@ -130,17 +134,20 @@ void player::accelerate(float _force)
 
 void player::impact(float damage)
 {
-	if (!_isShieldActive)
-		m_playerHealth -= damage;
+	/*if (!_isShieldActive)
+		m_playerHealth -= damage;*/
 }
 void player::SetHealth(int _newhealth)
 {
-
 	m_playerHealth = _newhealth;
+}
+void player::updateAmmo()
+{
+	m_ammo--;
 }
 void player::ResetAmmo()
 {
-
+	m_ammo = 20;
 }
 void player::activatePickup(pickup_manager::Type _type)
 {

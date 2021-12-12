@@ -19,7 +19,7 @@ void hud_manager::init()
 		glm::ortho(0.f, (float)engine::application::window().width(), 0.f,
 			(float)engine::application::window().height()));
 
-	m_HealthBar = cross_fade::create("assets/textures/GameTitle.png", 2.0f, 1.6f, 0.9f);
+	m_crosshair = cross_fade::create("assets/textures/Crosshair.png", 2.0f, 1.6f, 0.9f);
 
 	m_text_manager = engine::text_manager::create();
 }
@@ -27,13 +27,17 @@ void hud_manager::on_update(const engine::timestep& time_step, const engine::per
 {
 	glm::vec3 healthBarPos = camera.position() + camera.front_vector() * .2f;
 	healthBarPos -= camera.right_vector() * .2f;
-	m_HealthBar->activate();
-	m_HealthBar->on_update(time_step);
+	m_crosshair->activate();
+	m_crosshair->on_update(time_step);
 }
-void hud_manager::on_render(const engine::ref<engine::shader>& shader)
+void hud_manager::on_render(const engine::ref<engine::shader>& shader, engine::camera& camera)
 {
-	//m_HealthBar->on_render(shader);
 	const auto text_shader = engine::renderer::shaders_library()->get("text_2D");
-	m_text_manager->render_text(text_shader, "Health:: " + std::to_string(m_player_health), 10.f, (float)engine::application::window().height() - 25.f, 0.5f, glm::vec4(0.f, 1.f, 0.f, 1.f));
-	m_text_manager->render_text(text_shader, "Ammo:: " + std::to_string(m_ammoLeft), 10.f, 10.f, 0.5f, glm::vec4(0.f, 0.f, 1.f, 1.f));
+	m_text_manager->render_text(text_shader, "Health:: " + std::to_string(m_player_health), 15.f, (float)engine::application::window().height() - 50.f, 1.f, glm::vec4(0.f, 1.f, 0.f, 1.f));
+	m_text_manager->render_text(text_shader, "Score:: " + std::to_string(m_Score), 15.f, (float)engine::application::window().height() - 110.f, 1.f, glm::vec4(0.f, 1.f, 0.f, 1.f));
+	m_text_manager->render_text(text_shader, "Ammo:: " + std::to_string(m_ammoLeft), 10.f, 10.f, 1.f, glm::vec4(0.f, 0.f, 1.f, 1.f));
+
+	engine::renderer::begin_scene(camera, shader);
+	m_crosshair->on_render(shader);
+	engine::renderer::end_scene();
 }

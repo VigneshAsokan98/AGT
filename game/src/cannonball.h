@@ -13,9 +13,9 @@ public:
 	void shoot(const glm::vec3& _position, const glm::vec3& _forward, float kick);
 	void on_update(const engine::timestep& time_step);
 	void on_render(const engine::ref<engine::shader>& shader, const engine::perspective_camera& camera);
-
 	glm::vec3 last_position() const { return m_last_position; }
 
+	bool			m_exploded = false;
 	engine::ref<engine::game_object> object() const { return m_object; }
 
 private:
@@ -34,6 +34,7 @@ private:
 	glm::vec3 m_last_position{ 0.f };
 
 	engine::ref<Billboard>							m_explosionFX{};
+
 	void UpdatePhysics(const engine::timestep& time_step);
 	// Methods to handle collisions with the ground
 	bool collision_detection(float y_plane);
