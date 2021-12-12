@@ -134,8 +134,8 @@ void player::accelerate(float _force)
 
 void player::impact(float damage)
 {
-	/*if (!_isShieldActive)
-		m_playerHealth -= damage;*/
+	if (!_isShieldActive)
+		m_playerHealth -= damage;
 }
 void player::SetHealth(int _newhealth)
 {
