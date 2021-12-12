@@ -132,7 +132,7 @@ void turret_enemy::on_render(const engine::ref<engine::shader>& shader, const en
 	m_explosionFX->on_render(camera, shader);
 	m_health_bar->on_render(camera, shader);
 	engine::renderer::submit(shader, m_bullet);
-	m_Bullet_box.on_render(2.5f, 0.f, 0.f, shader);
+	//m_Bullet_box.on_render(2.5f, 0.f, 0.f, shader);
 }
 void turret_enemy::Respawn()
 {
